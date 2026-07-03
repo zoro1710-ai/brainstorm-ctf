@@ -28,6 +28,8 @@ description: |
   Wouldn't be the first time a name came out of a config file one character
   short of what it should be.
 
+  Dont forget to rebuild and relaunch to spell it properly
+
   ---
   Skills: ROS 2 actions (`ros2 action list/info/send_goal`), launch files, params.
   Flag format: `nodezero{...}`  •  Stage 6 of 8.

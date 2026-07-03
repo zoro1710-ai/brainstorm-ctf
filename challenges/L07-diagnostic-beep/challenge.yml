@@ -6,6 +6,7 @@ type: standard
 state: visible
 
 attachments:
+  - diagnostic_beep.wav
   - beep_timing.csv
 
 description: |
