@@ -16,7 +16,7 @@ description: |
   pointer to what comes next — one call, no parameters.
 
   ```
-  git clone <REPLACE-git-repo-url>/node_zero_handshake.git
+  git clone https://github.com/Y-Sanjana/nodezero.git node_zero_handshake
   cp -r node_zero_handshake/handshake_interfaces node_zero_handshake/handshake ~/ros2_ws/src/
   cd ~/ros2_ws && colcon build --packages-select handshake_interfaces handshake
   source install/setup.bash
