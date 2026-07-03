@@ -52,14 +52,8 @@ class HandshakeNode(Node):
 
         self.get_logger().info('=' * 64)
         self.get_logger().info('  UNIT ZERO handshake process -- state: DORMANT')
-        self.get_logger().info('  In another terminal, try:')
-        self.get_logger().info('    ros2 service list')
-        self.get_logger().info('    ros2 service type /unit_zero/wake')
-        self.get_logger().info('  Then call it with the wake word:')
-        self.get_logger().info(
-            "    ros2 service call /unit_zero/wake handshake_interfaces/srv/Wake "
-            "\"{word: '<wake word>'}\""
-        )
+        self.get_logger().info('  Explore this node with the ROS 2 command-line tools.')
+        self.get_logger().info('  It is waiting to hear the wake word from Stage 1.')
         self.get_logger().info('=' * 64)
 
     def _tick(self):
@@ -67,7 +61,7 @@ class HandshakeNode(Node):
         status.data = (
             'ONLINE :: handshake complete.'
             if self._awake
-            else 'DORMANT :: awaiting wake word via the /unit_zero/wake service.'
+            else 'DORMANT :: awaiting wake word.'
         )
         self.status_pub.publish(status)
 
