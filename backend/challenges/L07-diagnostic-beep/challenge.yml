@@ -7,17 +7,13 @@ state: visible
 
 attachments:
   - diagnostic_beep.wav
-  - beep_timing.csv
 
 description: |
   > `diagnostic_beep.wav` — the last sound Unit Zero made before it went dark.
   > It isn't noise. It's a signal, and it's timed.
 
-  Analyse the beep's on/off pattern. The long and short pulses spell out a short
-  word in timing — the final key Unit Zero needs to fully boot. (If audio tooling
-  is a barrier, a CSV of the pulse on/off timestamps is provided as a fallback.)
 
-  [⬇ Download diagnostic_beep.wav (+ beep_timing.csv fallback)] (attach via Files)
+  [⬇ Download diagnostic_beep.wav ]
 
   ---
   Skills: signal/timing analysis, Morse timing (short/long), decode to text.
@@ -31,7 +27,7 @@ flags:
   - nodezero{revive}
 
 hints:
-  - content: "Open the WAV in Audacity (or read beep_timing.csv). You'll see clear short and long pulses with gaps. Short/long/gap timing = Morse code."
+  - content: "Open the WAV in Audacity. You'll see clear short and long pulses with gaps which's used for communication"
     cost: 45
   - content: "Map short=dot, long=dash, decode with a Morse table. It's one short word — that word is the finale key. It also names the last repo you'll clone."
     cost: 90

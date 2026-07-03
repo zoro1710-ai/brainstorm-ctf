@@ -2,12 +2,11 @@
 """
 NODE ZERO - Stage 8 (finale): "Full Boot"
 
-Unit Zero's body is a turtlesim turtle. Bring it home: pilot it into the
-recovery zone, make sure the beacon is ready, then call the full-boot
-service with the key from Stage 7.
+Unit Zero's body, for this last stretch, is a turtlesim turtle. Pilot it
+through a square -- four straight legs, four turns, back close to where
+you started -- and the full boot completes on its own.
 
-Nothing here needs code changes. The faults (if any) are in how this
-workspace gets launched, not in this file.
+Nothing here needs code changes.
 """
 
 import base64
@@ -15,24 +14,24 @@ import math
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
-from std_msgs.msg import Bool, String
+from std_msgs.msg import String
 from turtlesim.msg import Pose
-from full_boot_interfaces.srv import FullBoot
 
-# The key is the word you recovered in Stage 7. Not written here in the
-# clear -- the check is case-insensitive and whitespace-tolerant.
-EXPECTED_KEY = "revive"
+# A leg has to be at least this long (turtlesim units) before a turn counts,
+# so small steering wobble while driving doesn't get mistaken for a corner.
+MIN_LEG_DISTANCE = 1.5
 
-# Where Unit Zero needs to be piloted to, and how close counts as "there".
-# The radius itself comes from a launch parameter (see below) -- this is
-# just the target point, which is fixed.
-TARGET_X = 8.0
-TARGET_Y = 2.0
+# A turn has to change heading by at least this much to count as a corner.
+TURN_THRESHOLD_DEG = 60.0
 
-# Result once fully awake: the flag. Stored encoded so it isn't a plain
-# `grep nodezero` away in the cloned repo -- only decoded at runtime, after
-# a correct wake.
+# After 4 corners, the turtle must be back within this distance of where it
+# started the shape, and must have turned a total of ~360 degrees (with this
+# much slack either way) -- i.e. a closed, roughly-convex quadrilateral.
+CLOSE_DISTANCE = 1.5
+TOTAL_TURN_TOLERANCE_DEG = 70.0
+
+# Result once the shape is confirmed: the flag. Stored encoded so it isn't a
+# plain `grep nodezero` away in the cloned repo -- only decoded at runtime.
 _RESULT_B64 = (
     "VU5JVCBaRVJPIDo6IEZVTEwgQk9PVCBDT01QTEVURS4KU2lnbmFsIHJlY292ZXJlZC4gVW5p"
     "dCBaZXJvIGlzIGZ1bGx5IGF3YWtlLgoKbm9kZXplcm97c2lnbmFsX3JlY292ZXJlZH0KCkZp"
@@ -40,95 +39,101 @@ _RESULT_B64 = (
 )
 
 
+def angle_diff_deg(a, b):
+    """Smallest signed difference a-b, in degrees, wrapped to [-180, 180]."""
+    d = math.degrees(a - b)
+    while d > 180:
+        d -= 360
+    while d < -180:
+        d += 360
+    return d
+
+
 class SupervisorNode(Node):
 
     def __init__(self):
         super().__init__('supervisor_node')
 
-        # How close (in turtlesim units) to TARGET_X/TARGET_Y counts as
-        # "arrived". Meant to be a sane, generous default -- if it isn't,
-        # that's a launch configuration problem, not something to fix here.
-        self.declare_parameter('target_radius', 1.0)
+        self._done = False
+        self._leg_start_xy = None
+        self._leg_heading = None
+        self._corners = 0
+        self._total_turn = 0.0
 
-        self._pose = None
-        self._beacon_ready = False
-
-        # Subscribed under a local name -- the launch file is responsible
-        # for connecting this to the turtle's real pose topic.
-        self.create_subscription(Pose, 'turtle_pose', self._on_pose, 10)
-
-        # The beacon publishes with TRANSIENT_LOCAL durability by design, so
-        # a supervisor that (re)starts after the beacon is already up still
-        # gets the latest reading. This subscription requests the same --
-        # if the beacon isn't publishing with matching durability, nothing
-        # will ever arrive here (check `ros2 topic info -v` if that happens).
-        beacon_qos = QoSProfile(
-            depth=1,
-            reliability=ReliabilityPolicy.RELIABLE,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
-        )
-        self.create_subscription(
-            Bool, '/unit_zero/beacon_ready', self._on_beacon, beacon_qos
-        )
-
+        self.create_subscription(Pose, '/turtle1/pose', self._on_pose, 10)
         self.status_pub = self.create_publisher(String, '/unit_zero/status', 10)
         self.create_timer(1.0, self._tick)
 
-        self.srv = self.create_service(
-            FullBoot, '/unit_zero/full_boot', self._on_full_boot
-        )
-
         self.get_logger().info('=' * 64)
         self.get_logger().info('  UNIT ZERO supervisor -- awaiting full boot')
-        self.get_logger().info(f'  Recovery zone: ({TARGET_X}, {TARGET_Y})')
+        self.get_logger().info('  Pilot the turtle through a square to wake it.')
         self.get_logger().info('=' * 64)
 
-    def _on_pose(self, msg):
-        self._pose = msg
-
-    def _on_beacon(self, msg):
-        self._beacon_ready = bool(msg.data)
-
-    def _distance(self):
-        if self._pose is None:
-            return None
-        return math.hypot(self._pose.x - TARGET_X, self._pose.y - TARGET_Y)
-
     def _tick(self):
-        radius = self.get_parameter('target_radius').value
-        dist = self._distance()
-        status = String()
-        if dist is None:
-            status.data = 'AWAITING POSE :: no pose data received yet.'
-        else:
-            status.data = (
-                f'distance to recovery zone: {dist:.2f} (need <= {radius:.2f}) '
-                f':: beacon_ready={self._beacon_ready}'
+        if self._done:
+            return
+        msg = String()
+        msg.data = (
+            f'corners so far: {self._corners}/4, total turn: {self._total_turn:.0f} deg'
+        )
+        self.status_pub.publish(msg)
+
+    def _on_pose(self, pose):
+        if self._done:
+            return
+
+        if self._leg_start_xy is None:
+            # First reading: this is where the shape itself begins (point A),
+            # and also where the first leg starts.
+            self._leg_start_xy = (pose.x, pose.y)
+            self._leg_heading = pose.theta
+            self._shape_start_xy = (pose.x, pose.y)
+            return
+
+        dist = math.hypot(pose.x - self._leg_start_xy[0], pose.y - self._leg_start_xy[1])
+        turn = angle_diff_deg(pose.theta, self._leg_heading)
+
+        if dist >= MIN_LEG_DISTANCE and abs(turn) >= TURN_THRESHOLD_DEG:
+            self._corners += 1
+            self._total_turn += abs(turn)
+            self.get_logger().info(
+                f'Corner {self._corners} detected (turned {turn:.0f} deg, '
+                f'leg length {dist:.2f}).'
             )
-        self.status_pub.publish(status)
 
-    def _on_full_boot(self, request, response):
-        key = request.key.strip().lower()
-        radius = self.get_parameter('target_radius').value
-        dist = self._distance()
+            # Start the next leg from here.
+            self._leg_start_xy = (pose.x, pose.y)
+            self._leg_heading = pose.theta
 
-        problems = []
-        if key != EXPECTED_KEY:
-            problems.append('wrong key')
-        if not self._beacon_ready:
-            problems.append('beacon not ready')
-        if dist is None:
-            problems.append('no pose data (turtle position unknown)')
-        elif dist > radius:
-            problems.append(f'turtle not in recovery zone (distance {dist:.2f} > {radius:.2f})')
+            if self._corners >= 4:
+                self._check_shape_complete(pose)
 
-        if problems:
-            response.success = False
-            response.message = 'REJECTED :: ' + '; '.join(problems)
+    def _check_shape_complete(self, pose):
+        closing_dist = math.hypot(
+            pose.x - self._shape_start_xy[0],
+            pose.y - self._shape_start_xy[1],
+        )
+        turn_ok = abs(self._total_turn - 360.0) <= TOTAL_TURN_TOLERANCE_DEG
+        close_ok = closing_dist <= CLOSE_DISTANCE
+
+        if turn_ok and close_ok:
+            self._done = True
+            result = String()
+            result.data = base64.b64decode(_RESULT_B64).decode('utf-8')
+            self.status_pub.publish(result)
+            self.get_logger().info('=' * 64)
+            self.get_logger().info('  SQUARE CONFIRMED. UNIT ZERO FULLY AWAKE.')
+            self.get_logger().info(result.data)
+            self.get_logger().info('=' * 64)
         else:
-            response.success = True
-            response.message = base64.b64decode(_RESULT_B64).decode('utf-8')
-        return response
+            self.get_logger().warn(
+                f'4 corners seen but shape not closed (closing distance '
+                f'{closing_dist:.2f}, total turn {self._total_turn:.0f} deg) '
+                '-- resetting, try again.'
+            )
+            self._corners = 0
+            self._total_turn = 0.0
+            self._shape_start_xy = (pose.x, pose.y)
 
 
 def main(args=None):

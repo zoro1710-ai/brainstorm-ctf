@@ -7,7 +7,6 @@ state: visible
 
 attachments:
   - diagnostic_beep.wav
-  - beep_timing.csv
 
 description: |
   > `diagnostic_beep.wav` — the last sound Unit Zero made before it went dark.

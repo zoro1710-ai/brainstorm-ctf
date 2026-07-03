@@ -22,7 +22,6 @@ setup(
     entry_points={
         'console_scripts': [
             'supervisor_node = full_boot.supervisor_node:main',
-            'beacon_node = full_boot.beacon_node:main',
         ],
     },
 )

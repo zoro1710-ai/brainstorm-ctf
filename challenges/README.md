@@ -22,15 +22,12 @@ a point total).
 | 4 | CORRUPTED LOG | Cipher I (Caesar + Morse-coded key) | `corrupted.log` (Files) | Stage 3 |
 | 5 | MISSION 047 | Rosbag forensics (with noise-filtering) | **git repo** (per-team) | Stage 4 |
 | 6 | WAKE SEQUENCE | Broken launch + ROS 2 action call | **git repo** | Stage 5 |
-| 7 | DIAGNOSTIC BEEP | Audio / Morse timing | `diagnostic_beep.wav` (+CSV) | Stage 6 |
-| 8 | FULL BOOT (finale) | turtlesim, 4 faults + teleop/services | **git repo** (per-team flag) | Stage 7 |
+| 7 | DIAGNOSTIC BEEP | Audio / Morse timing | `diagnostic_beep.wav` (Files) | Stage 6 |
+| 8 | FULL BOOT (finale) | turtlesim square-tracing (teleop) | **git repo** (per-team flag) | Stage 7 |
 
-> Stages 1–6 and 8 have built, verified artifacts. Stage 7 (Diagnostic Beep)
-> still needs its real `diagnostic_beep.wav` authored — `beep_timing.csv`
-> already works as a verified fallback and decodes correctly, so the stage
-> is solvable today, just not via its primary intended medium. Stage 8's
-> flag is a single shared value for testing — **per-team randomize Stages
-> 5 and 8** (anti-share) using `_templates/per-team-randomizer.py` before
+> All 8 stages have built, verified artifacts. Stage 8's flag is a single
+> shared value for testing — **per-team randomize Stages 5 and 8**
+> (anti-share) using `_templates/per-team-randomizer.py` before
 > go-live.
 
 ## The chain / clue handoffs
@@ -42,7 +39,8 @@ a point total).
 5 → 6 : reconstructed message (after filtering noise from the channel) names
         the `node_zero_wakeseq` repo + the code (= its own tail).
 6 → 7 : action result references `diagnostic_beep.wav`.
-7 → 8 : decoded Morse word = finale key + names the full-boot repo.
+7 → 8 : decoded Morse word points to the full-boot repo (no key needed there
+        anymore -- Stage 8 is pure piloting).
 
 ## Import (ctfcli)
 
@@ -87,8 +85,8 @@ the package folder, NOT this `challenges/` tree (which holds flags + solutions).
   `_organizer_generate_bag.py` (has the plaintext message in the clear) stays out
   of this folder and is never pushed to the participant-facing repo.
 - **Stage 6:** push `L06-wake-sequence/node_zero_wakeseq/`. Same base64-at-runtime rule.
-- Same rule for the future Stage 8 (Full Boot) workspace: extract the
-  package into its own repo and **never commit the literal flag** in greppable form.
+- **Stage 8:** push `L08-full-boot/node_zero_fullboot/`. Same base64-at-runtime rule
+  (the flag is only decoded once the square is confirmed).
 - Each repo already has a `.gitignore` for `build/ install/ log/ __pycache__/`.
 
 ```bash

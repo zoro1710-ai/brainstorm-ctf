@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """
-NODE ZERO -- Stage 7 organizer tool: builds diagnostic_beep.wav from
-beep_timing.csv (the two must always describe the exact same pattern).
+NODE ZERO -- Stage 7 organizer tool: builds diagnostic_beep.wav.
 
-Reads beep_timing.csv (index,state,start_ms,duration_ms) and synthesizes a
-WAV: a tone during each ON window, silence during each OFF window. The
-on/off envelope is Morse timing (short=dot, long=dash), deliberately not a
+Synthesizes a WAV from the on/off timing below: a tone during each ON
+window, silence during each OFF window. The on/off envelope is Morse
+timing (short=dot, long=dash) for the word REVIVE, deliberately not a
 cipher -- kept distinct from the medium-tier cipher stages.
 
 Run:
     python3 _organizer_generate_beep.py [outdir]
 """
-import csv
 import math
 import os
 import struct
@@ -23,13 +21,17 @@ TONE_HZ = 800.0
 AMPLITUDE = 0.6  # of full scale, keeps headroom / avoids clipping
 FADE_MS = 5      # short fade in/out per tone to avoid audible clicks
 
-
-def read_timing(csv_path):
-    rows = []
-    with open(csv_path, newline='') as f:
-        for r in csv.DictReader(f):
-            rows.append((r['state'], int(r['start_ms']), int(r['duration_ms'])))
-    return rows
+# (state, start_ms, duration_ms) -- decodes to REVIVE in Morse timing.
+TIMING = [
+    ('ON', 0, 120), ('OFF', 120, 120), ('ON', 240, 360), ('OFF', 600, 120),
+    ('ON', 720, 120), ('OFF', 840, 360), ('ON', 1200, 120), ('OFF', 1320, 360),
+    ('ON', 1680, 120), ('OFF', 1800, 120), ('ON', 1920, 120), ('OFF', 2040, 120),
+    ('ON', 2160, 120), ('OFF', 2280, 120), ('ON', 2400, 360), ('OFF', 2760, 360),
+    ('ON', 3120, 120), ('OFF', 3240, 120), ('ON', 3360, 120), ('OFF', 3480, 360),
+    ('ON', 3840, 120), ('OFF', 3960, 120), ('ON', 4080, 120), ('OFF', 4200, 120),
+    ('ON', 4320, 120), ('OFF', 4440, 120), ('ON', 4560, 360), ('OFF', 4920, 360),
+    ('ON', 5280, 120),
+]
 
 
 def synth(rows):
@@ -60,13 +62,11 @@ def write_wav(path, samples):
 
 def main():
     outdir = sys.argv[1] if len(sys.argv) > 1 else '.'
-    csv_path = os.path.join(os.path.dirname(__file__), 'beep_timing.csv')
-    rows = read_timing(csv_path)
-    samples = synth(rows)
+    samples = synth(TIMING)
     out_path = os.path.join(outdir, 'diagnostic_beep.wav')
     write_wav(out_path, samples)
-    total_ms = rows[-1][1] + rows[-1][2]
-    print(f'[+] wrote {out_path} ({total_ms/1000:.2f}s, {len(rows)} on/off segments)')
+    total_ms = TIMING[-1][1] + TIMING[-1][2]
+    print(f'[+] wrote {out_path} ({total_ms/1000:.2f}s, {len(TIMING)} on/off segments)')
 
 
 if __name__ == '__main__':
