@@ -15,8 +15,7 @@ description: |
   don't arrive in tidy order — reconstruct the sequence (by index / timestamp)
   to read it.
 
-  **Topics aren't latched — start listening *before* you play, or you'll miss
-  the messages published while you were still setting up.**
+  Topics aren't latched — start listening *before* you play, or you'll miss the messages published while you were still setting up.
 
   ```
   git clone https://github.com/Y-Sanjana/nodezero.git node_zero_mission047
