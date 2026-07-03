@@ -1,0 +1,44 @@
+rosbag2_bagfile_information:
+  version: 5
+  storage_identifier: sqlite3
+  duration:
+    nanoseconds: 59625000000
+  starting_time:
+    nanoseconds_since_epoch: 1700000000000000000
+  message_count: 225
+  topics_with_message_count:
+    - topic_metadata:
+        name: /unit_zero/subcarrier
+        type: std_msgs/msg/String
+        serialization_format: cdr
+        offered_qos_profiles: ""
+      message_count: 160
+    - topic_metadata:
+        name: /diagnostics
+        type: diagnostic_msgs/msg/DiagnosticArray
+        serialization_format: cdr
+        offered_qos_profiles: ""
+      message_count: 15
+    - topic_metadata:
+        name: /imu/data
+        type: sensor_msgs/msg/Imu
+        serialization_format: cdr
+        offered_qos_profiles: ""
+      message_count: 30
+    - topic_metadata:
+        name: /battery_state
+        type: sensor_msgs/msg/BatteryState
+        serialization_format: cdr
+        offered_qos_profiles: ""
+      message_count: 20
+  compression_format: ""
+  compression_mode: ""
+  relative_file_paths:
+    - mission_047_0.db3
+  files:
+    - path: mission_047_0.db3
+      starting_time:
+        nanoseconds_since_epoch: 1700000000000000000
+      duration:
+        nanoseconds: 59625000000
+      message_count: 225

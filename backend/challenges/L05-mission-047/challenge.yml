@@ -15,7 +15,7 @@ description: |
   in tidy order — reconstruct the sequence (by index / timestamp) to read it.
 
   ```
-  git clone <REPLACE-git-repo-url>/node_zero_mission047.git
+  git clone https://github.com/Y-Sanjana/nodezero.git node_zero_mission047
   ros2 bag info node_zero_mission047/mission_047
   ros2 bag play node_zero_mission047/mission_047
   # in another terminal:
