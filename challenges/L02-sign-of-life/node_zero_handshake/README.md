@@ -28,40 +28,17 @@ you sourced `/opt/ros/humble/setup.bash` first.
 ## What to do next
 
 The node is up but **DORMANT**. Open a **second terminal**, source your workspace
-again (`source ~/ros2_ws/install/setup.bash`), and explore with the training
-commands:
-
-- `ros2 service list`
-- `ros2 service type /unit_zero/wake`
-
-The unit is waiting for its wake word — and it only takes one command to speak
-to it. Call the service with the word from Stage 1 and the response comes back
-immediately, in the same terminal:
-
-```
-ros2 service call /unit_zero/wake handshake_interfaces/srv/Wake "{word: 'hawksbill'}"
-```
+again (`source ~/ros2_ws/install/setup.bash`), and explore it with the standard
+ROS 2 command-line tools from the training. The unit is waiting to hear
+something — find the right interface and speak to it with the word you
+recovered in Stage 1.
 
 Get it right and the response carries two things: a flag, and where to find its
 recorder source next. Get it wrong and it tells you plainly: rejected, still
 dormant.
 
-## Hints
-
-<details><summary>Hint 1</summary>
-`ros2 service list` shows a `/unit_zero/wake` service. `ros2 service type
-/unit_zero/wake` tells you its interface: `handshake_interfaces/srv/Wake`.
-</details>
-
-<details><summary>Hint 2</summary>
-Call it directly — no parameters involved:
-`ros2 service call /unit_zero/wake handshake_interfaces/srv/Wake "{word: '<the codeword from Stage 1>'}"`.
-</details>
-
-<details><summary>Hint 3</summary>
-The wake word is the second word of the ROS 2 distro codename you recovered in
-Stage 1 — just the animal. The service response carries the flag directly.
-</details>
+Stuck? Use the challenge's paid hints on the platform rather than looking here —
+this file intentionally won't spell out the interface or the answer.
 
 ## When you're done
 
