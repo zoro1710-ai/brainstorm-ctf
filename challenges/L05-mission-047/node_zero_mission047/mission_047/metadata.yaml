@@ -2,17 +2,17 @@ rosbag2_bagfile_information:
   version: 5
   storage_identifier: sqlite3
   duration:
-    nanoseconds: 59625000000
+    nanoseconds: 59178082176
   starting_time:
     nanoseconds_since_epoch: 1700000000000000000
-  message_count: 225
+  message_count: 138
   topics_with_message_count:
     - topic_metadata:
         name: /unit_zero/subcarrier
         type: std_msgs/msg/String
         serialization_format: cdr
         offered_qos_profiles: ""
-      message_count: 160
+      message_count: 73
     - topic_metadata:
         name: /diagnostics
         type: diagnostic_msgs/msg/DiagnosticArray
@@ -40,5 +40,5 @@ rosbag2_bagfile_information:
       starting_time:
         nanoseconds_since_epoch: 1700000000000000000
       duration:
-        nanoseconds: 59625000000
-      message_count: 225
+        nanoseconds: 59178082176
+      message_count: 138

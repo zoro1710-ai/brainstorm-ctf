@@ -37,11 +37,8 @@ from sensor_msgs.msg import BatteryState, Imu
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from diagnostic_msgs.msg import KeyValue
 
-FLAG = "nodezero{mission_047_reassembled}"
-MESSAGE = (
-    FLAG + " HANDOFF: recovered artifact points to a captured uplink dump "
-    "(uplink_dump.txt). XOR key = the tail of what you just recovered."
-)
+FLAG = "nodezero{last_flight}"
+MESSAGE = FLAG + " next: uplink_dump.txt. XOR key = tail of this flag."
 
 SECRET_TOPIC = "/unit_zero/subcarrier"
 BASE_NS = 1_700_000_000_000_000_000  # arbitrary epoch-ish start, nanoseconds

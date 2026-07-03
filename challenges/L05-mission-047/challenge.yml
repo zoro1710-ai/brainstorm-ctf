@@ -39,13 +39,15 @@ description: |
 # Handoff: reconstructed message names a "packet capture" file for Stage 6 and
 # states the XOR key = "the tail of what you just recovered." Author flag below.
 flags:
-  - nodezero{mission_047_reassembled}
+  - nodezero{last_flight}
 
 hints:
-  - content: "`ros2 bag info` lists the topics. Most are ordinary telemetry. One is not — it has a lot of tiny String messages. That's your channel."
-    cost: 30
-  - content: "Each message holds ONE character plus an index/timestamp. Collect them all, sort by that order, and concatenate. The end of the message tells you the key for next stage."
-    cost: 60
+  - content: "Run `ros2 bag info node_zero_mission047/mission_047`. Three topics are normal telemetry (`/battery_state`, `/imu/data`, `/diagnostics`). The odd one out is `/unit_zero/subcarrier` — a `std_msgs/String` topic with far more messages than the rest. That's your channel."
+    cost: 20
+  - content: "Subscribe to `/unit_zero/subcarrier` BEFORE you play the bag (topics aren't latched — starting late means missing whatever already went by): `ros2 topic echo /unit_zero/subcarrier > capture.log`, then in a second terminal `ros2 bag play node_zero_mission047/mission_047`."
+    cost: 35
+  - content: "Each `data:` line looks like `<index>:<character>` — one character, tagged with its position. Parse every `data:` line, split on the FIRST colon only (the character itself could be a colon), sort by the integer index, and join in order. What comes out is the flag directly — no cipher, just reordering."
+    cost: 55
 
 requirements:
   - "L4 // CORRUPTED LOG"
