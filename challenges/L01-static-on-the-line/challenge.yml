@@ -1,0 +1,61 @@
+name: "L1 // STATIC ON THE LINE"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 1"
+value: 100
+type: standard
+state: visible
+
+attachments:
+  - blackbox_fragment.log
+
+description: |
+  > **MAINTENANCE LOG — AUTO-GENERATED**
+  > Unit Zero stopped responding mid-cycle. No crash report. No shutdown
+  > sequence. Just... static.
+
+  Recovery crews pulled one surviving artifact from the wreckage: a fragment of
+  Unit Zero's flight-recorder log. It still remembers how the bot booted — and,
+  buried in the boot environment, how to wake it up again.
+
+  The bot's **wake protocol keys off its own build identity**. The recorder won't
+  spell the wake word out for you: it assumes anyone who *built* this bot already
+  knows where that name is written down, in public. Read the fragment carefully —
+  most of it is noise — follow what it's pointing at, and recover the wake word.
+
+
+  **Download the attached `blackbox_fragment.log` and start reading.**
+
+  ---
+  Skills: careful reading, using the official ROS 2 documentation.
+  Flag format: `nodezero{...}`
+
+# ORGANIZER — attach blackbox_fragment.log via Admin → Challenge → Files.
+#
+# SOLUTION
+#   Almost every line ends in "(nominal)" and is decoy noise. The player must
+#   notice the ONE meaningful environment line:  env: ROS_DISTRO=humble
+#   Then look up the official ROS 2 distributions list (docs.ros.org / REP 2000)
+#   and read humble's codename: "Humble Hawksbill". Wake word = hawksbill.
+#
+#   TRAP 1 (in the log): an earlier line reads "bootloader v3 (compat: galactic)".
+#   A careless player grabs "galactic" (-> Geochelone). The recovery note tells
+#   them to use the distro the unit RUNS ON (ROS_DISTRO), not the compat note.
+#   TRAP 2 (in the docs): every ROS 2 codename is a turtle/tortoise species, so
+#   "just find the turtle name" doesn't narrow it — they must match the `humble`
+#   row specifically.
+#
+# HANDOFF: the flag's codeword `hawksbill` is the wake word Stage 2 ("Sign of
+#   Life") requires as the `word` field of its `/unit_zero/wake` service call.
+#   Players must READ the log, not just grep.
+flags:
+  - nodezero{hawksbill}
+
+hints:
+  - content: "Most lines in the fragment end in `(nominal)` — that's noise. Look at the boot ENVIRONMENT block; one `env:` line there is not marked nominal. That's the one that matters."
+    cost: 10
+  - content: "`env: ROS_DISTRO=humble` is the unit's actual distribution (ignore the older `compat: ...` bootloader note). Every ROS 2 release has a two-word codename — look up the official ROS 2 distributions list (docs.ros.org / REP 2000)."
+    cost: 20
+  - content: "Find the codename for `humble` specifically — not just any turtle name in the table. It's `Humble Hawksbill`. The wake word is that codename's second word."
+    cost: 35
+
+# Stage 1 is the entry point — no prerequisites.

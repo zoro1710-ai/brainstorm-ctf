@@ -1,0 +1,44 @@
+name: "L3 // COLD START"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 3"
+value: 300
+type: standard
+state: visible
+
+description: |
+  > Unit Zero's handshake response pointed you at its recorder source. It's all
+  > here — but it won't build. Something got corrupted in the crash.
+
+  Clone the recorder workspace onto your **Ubuntu 22.04 + ROS 2 Humble** machine
+  and `colcon build` it. It will fail. Fix what's broken (it's a small, honest
+  mistake — a bad dependency / entry point / indentation, not a puzzle box), get
+  the node running, and it will publish its recovery log. The log carries a
+  scrambled line and the flag.
+
+  ```
+  git clone <REPLACE-git-repo-url>/node_zero_coldstart.git
+  cp -r node_zero_coldstart/coldstart_recorder ~/ros2_ws/src/
+  cd ~/ros2_ws && colcon build --packages-select coldstart_recorder
+  source install/setup.bash
+  ros2 run coldstart_recorder coldstart_node
+  ```
+
+  ---
+  Skills: `colcon build` debugging, reading build errors, `ros2 run`, topic echo.
+  Flag format: `nodezero{...}`  •  Stage 3 of 10.
+
+# ORGANIZER: ship as a git repo with ONE intentional, clearly-erroring build bug
+# (guiding error message, not a red herring). Node publishes a Caesar-ciphered
+# line + the flag. Handoff: the package.xml <version> field IS the Caesar shift
+# needed for Stage 4. Author the real flag below.
+flags:
+  - nodezero{cold_start_rebuilt}
+
+hints:
+  - content: "Read the `colcon build` error from the TOP, not the bottom. It names the file and the line. This is a normal build mistake, not a hidden trick."
+    cost: 20
+  - content: "Once it runs, `ros2 topic echo` the recovery topic. You'll see the flag plus a scrambled line — note the package's `<version>` number, you'll want it next stage."
+    cost: 40
+
+requirements:
+  - "L2 // SIGN OF LIFE"

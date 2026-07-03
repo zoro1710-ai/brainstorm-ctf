@@ -1,0 +1,37 @@
+=== UNIT ZERO :: FLIGHT RECORDER FRAGMENT (recovered, partial) ===
+=== source: /var/log/unit_zero/blackbox.log :: segment 0x3F ===
+
+[00:00:00.014] power: rail 12V ................... (nominal)
+[00:00:00.022] power: rail 5V .................... (nominal)
+[00:00:00.031] power: rail 3V3 ................... (nominal)
+[00:00:00.045] boot: rom self-test ............... (nominal)
+[00:00:00.061] boot: bootloader v3 (compat: galactic) (nominal)
+[00:00:00.077] boot: filesystem check ............ (nominal)
+[00:00:00.083] boot: mounting /overlay ........... (nominal)
+[00:00:00.090] env: ROS_DOMAIN_ID=0 .............. (nominal)
+[00:00:00.091] env: RMW_IMPLEMENTATION=rmw_fastrtps_cpp (nominal)
+[00:00:00.092] env: ROS_DISTRO=humble
+[00:00:00.093] env: ROS_VERSION=2 ................ (nominal)
+[00:00:00.094] env: ROS_LOCALHOST_ONLY=0 .......... (nominal)
+[00:00:00.101] net: eth0 link up ................. (nominal)
+[00:00:00.118] net: dhcp lease acquired .......... (nominal)
+[00:00:00.140] node: /blackbox_node spawned ...... (nominal)
+[00:00:00.152] node: /battery_monitor spawned .... (nominal)
+[00:00:00.167] node: /imu_driver spawned ......... (nominal)
+[00:00:00.203] node: /joint_state_broadcaster ... (nominal)
+[00:00:00.240] rcl: init_options configured ...... (nominal)
+[00:00:00.318] rcl: context initialized .......... (nominal)
+[00:00:00.402] sensors: imu calibration pass ..... (nominal)
+[00:00:00.511] sensors: encoder zero recorded .... (nominal)
+[00:00:00.700] motors: driver handshake ok ....... (nominal)
+[00:00:00.812] motors: torque limit set 40% ...... (nominal)
+[00:00:01.004] diag: cpu temp 41C ................ (nominal)
+[00:00:01.203] diag: mem free 812MB .............. (nominal)
+[00:00:01.500] telemetry: heartbeat 1 ............ (nominal)
+[00:00:02.001] telemetry: heartbeat 2 ............ (nominal)
+[00:00:02.501] telemetry: heartbeat 3 ............ (nominal)
+[00:00:03.002] telemetry: heartbeat 4 ............ (nominal)
+[00:00:03.199] telemetry: heartbeat 5 ............ (nominal)
+[00:00:03.2--] --- transmission cut mid-cycle, no shutdown sequence recorded ---
+
+=== end of recovered fragment ===

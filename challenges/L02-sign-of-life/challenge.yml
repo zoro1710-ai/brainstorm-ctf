@@ -1,0 +1,63 @@
+name: "L2 // SIGN OF LIFE"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 2"
+value: 200
+type: standard
+state: visible
+
+description: |
+  > You recovered Unit Zero's **wake word** in Stage 1. Now connect to the bot
+  > for the first time and speak it.
+
+  Clone the handshake workspace onto your **Ubuntu 22.04 + ROS 2 Humble** machine
+  and run it. The unit boots **DORMANT** — it won't respond until it hears the
+  correct wake word. Discover its service with the ROS 2 command-line tools,
+  call it with the word from Stage 1, and the response carries the flag and a
+  pointer to what comes next — one call, no parameters.
+
+  ```
+  git clone <REPLACE-git-repo-url>/node_zero_handshake.git
+  cp -r node_zero_handshake/handshake_interfaces node_zero_handshake/handshake ~/ros2_ws/src/
+  cd ~/ros2_ws && colcon build --packages-select handshake_interfaces handshake
+  source install/setup.bash
+  ros2 run handshake handshake_node
+  ```
+
+  ---
+  Skills: `ros2 run`, `ros2 service list` / `type` / `call`.
+  Flag format: `nodezero{...}`
+
+# ORGANIZER — host node_zero_handshake as a clonable git repo (source is in this
+# folder). This is the FIRST hands-on ROS 2 stage and builds CLEANLY on purpose
+# (the broken build is Stage 3).
+#
+# SOLUTION
+#   1. clone -> colcon build --packages-select handshake_interfaces handshake ->
+#      source -> ros2 run
+#   2. `ros2 service list` shows `/unit_zero/wake`; `ros2 service type
+#      /unit_zero/wake` shows `handshake_interfaces/srv/Wake`.
+#   3. `ros2 service call /unit_zero/wake handshake_interfaces/srv/Wake
+#      "{word: 'hawksbill'}"` (from Stage 1) — ONE call, response comes back
+#      immediately in the same terminal with the flag + the Stage-3 repo
+#      pointer. (Check is case-insensitive / whitespace-tolerant.)
+#   Wrong word -> response says REJECTED, node logs it, stays dormant (instant
+#   feedback, no retries needed to see the failure).
+#
+# CHAIN: mechanically gated on the real Stage-1 answer (the codeword 'hawksbill').
+# HANDOFF: response names node_zero_coldstart.git @ tag cold-start-v1 (Stage 3).
+# PUSH-SAFE: the flag is stored base64 in handshake_node.py (_RESPONSE_B64) and
+#   only decoded at runtime, so a `grep nodezero` on the cloned repo finds nothing.
+#   Push node_zero_handshake/ as a standalone git repo for teams to clone.
+flags:
+  - nodezero{first_sign_of_life}
+
+hints:
+  - content: "Build and run it, then in a second terminal `ros2 service list`. One service stands out: `/unit_zero/wake`. Check its type with `ros2 service type /unit_zero/wake`."
+    cost: 15
+  - content: "Call it directly — no parameters involved: `ros2 service call /unit_zero/wake handshake_interfaces/srv/Wake \"{word: '<the codeword from Stage 1>'}\"`. The response comes back in the same terminal."
+    cost: 30
+  - content: "The wake word is the animal from the ROS 2 distro codename you found in Stage 1 (Humble **Hawksbill** → `hawksbill`)."
+    cost: 45
+
+requirements:
+  - "L1 // STATIC ON THE LINE"

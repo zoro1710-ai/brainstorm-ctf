@@ -1,0 +1,39 @@
+name: "L6 // UPLINK DUMP"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 6"
+value: 600
+type: standard
+state: visible
+
+attachments:
+  - uplink_dump.txt
+
+description: |
+  > Stage 5 pointed you at a captured uplink dump — and told you the key was
+  > "the tail of what you just recovered." Two layers stand between you and the
+  > message.
+
+  The dump is text. First decode the outer layer (it's a very common encoding —
+  you'll recognise it on sight). Under that is ciphertext you XOR against the key
+  you carried from Stage 5. Two steps, in order.
+
+  [⬇ Download uplink_dump.txt] (attach via Admin → Challenge → Files)
+
+  ---
+  Skills: Base64 decoding, XOR with a known key, chaining two decodes.
+  Flag format: `nodezero{...}`  •  Stage 6 of 10.
+
+# ORGANIZER: outer = Base64, inner = XOR with the key = tail of the Stage-5 flag.
+# Decoded text says the logs are archived and to "mind the quiet spaces between
+# the words," and names the log file for Stage 7. Author the real flag below.
+flags:
+  - nodezero{cipher_two_uplink}
+
+hints:
+  - content: "The dump is all A-Z, a-z, 0-9, +, / and maybe some `=` padding. That shape is Base64. Decode that first."
+    cost: 30
+  - content: "What comes out is still scrambled — XOR it byte-by-byte against the key from Stage 5 (the tail of that flag). The result names your next file and drops a hint about 'quiet spaces.'"
+    cost: 60
+
+requirements:
+  - "L5 // MISSION 047"

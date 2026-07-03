@@ -1,0 +1,1 @@
+- [Bearer-auth vs anchor downloads](bug-anchor-download-auth.md) — authed file routes served via `<a download>` links break; token must ride in query

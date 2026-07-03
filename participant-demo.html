@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     PARTICIPANT DEMO — double-click to open in any browser.
+     A CLICKABLE simulation of what a team sees and does on Stages 1–2:
+       Stage 1: read the recovered log → follow it to the ROS 2 docs →
+         submit the wake word (nodezero{hawksbill}).
+       Stage 2: run the handshake node → set the wake_word param →
+         Unit Zero responds (nodezero{first_sign_of_life}) → Stage 3 unlocks.
+     Flag check here is client-side for demo only; the real CTFd
+     site checks flags server-side.
+     ============================================================ -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NODE ZERO — participant demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme/nodezero.css">
+<style>
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px 80px;}
+  .navbar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;}
+  .navbar .links a{margin-left:18px;color:var(--muted);text-decoration:none;font-size:14px;}
+  .demo-banner{background:rgba(255,180,84,.1);border:1px dashed var(--warn);color:var(--warn);
+     font-size:12px;padding:8px 14px;border-radius:4px;margin:16px 0;}
+  .section-label{color:var(--warn);letter-spacing:2px;text-transform:uppercase;font-size:13px;margin:30px 0 12px;}
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+  .tile{padding:18px;border:1px solid var(--accent-dim);border-radius:6px;background:var(--panel);cursor:pointer;transition:.15s;}
+  .tile:hover{transform:translateY(-2px);box-shadow:0 0 16px rgba(53,224,255,.3);}
+  .tile .pts{float:right;color:var(--warn);}
+  .tile.solved{border-color:var(--accent);box-shadow:inset 0 0 14px rgba(53,224,255,.18);cursor:default;}
+  .tile.locked{opacity:.4;filter:grayscale(.6);cursor:not-allowed;}
+  .tile small{color:var(--muted);}
+  .hidden{display:none;}
+  .panel-box{background:var(--panel);border:1px solid var(--accent-dim);border-radius:8px;padding:26px;margin-top:10px;}
+  .story{white-space:pre-wrap;line-height:1.65;margin:14px 0;}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;}
+  .log-box{max-height:260px;overflow:auto;border:1px solid var(--accent-dim);border-radius:4px;margin-top:12px;
+     background:#070b14;padding:12px;font-size:12.5px;white-space:pre;color:var(--muted);}
+  .log-box b{color:var(--accent);}
+  .term{background:#060a14;border:1px solid var(--accent-dim);border-radius:4px;padding:14px;
+     margin-top:12px;font-size:13px;white-space:pre-wrap;color:var(--text);min-height:24px;}
+  .back{color:var(--muted);cursor:pointer;font-size:13px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:6px 12px;border-bottom:1px solid #122033;}
+  th{color:var(--warn);}
+  .scorebar td:first-child{color:var(--accent);}
+  .prompt{color:var(--accent);}
+  .result-ok{color:var(--accent);} .result-no{color:var(--danger);}
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <span class="navbar-brand">NODE//ZERO</span>
+    <span class="links">
+      <a href="#" onclick="showBoard()">TRAIL</a>
+      <a href="#" onclick="showScore()">SCOREBOARD</a>
+      <a href="#" style="color:var(--accent)">◍ team_demo</a>
+    </span>
+  </div>
+
+  <div class="wrap">
+    <div class="demo-banner">◍ DEMO — click Stage 1 and play it through. (Flag check is in-page for the demo; the live site checks on the server.)</div>
+
+    <!-- ============ BOARD VIEW ============ -->
+    <div id="view-board">
+      <h2 class="section-label">// the trail — <span id="nodecount">0</span>/10 stages recovered</h2>
+      <div class="board">
+        <div class="tile" id="tile1" onclick="openS1()"><span class="pts">1</span>▶ Static on the Line<br><small id="t1status">OPEN — click to start</small></div>
+        <div class="tile locked" id="tile2"><span class="pts">2</span>🔒 Sign of Life<br><small>clear stage 1 to unlock</small></div>
+        <div class="tile locked" id="tile3"><span class="pts">3</span>🔒 Cold Start<br><small>clear stage 2</small></div>
+        <div class="tile locked"><span class="pts">4</span>🔒 Corrupted Log<br><small>clear stage 3</small></div>
+        <div class="tile locked"><span class="pts">5</span>🔒 Mission 047<br><small>clear stage 4</small></div>
+        <div class="tile locked"><span class="pts">6</span>🔒 Uplink Dump<br><small>clear stage 5</small></div>
+        <div class="tile locked"><span class="pts">7</span>🔒 Quiet Spaces<br><small>clear stage 6</small></div>
+        <div class="tile locked"><span class="pts">8</span>🔒 Wake Sequence<br><small>clear stage 7</small></div>
+        <div class="tile locked"><span class="pts">9</span>🔒 Diagnostic Beep<br><small>clear stage 8</small></div>
+        <div class="tile locked"><span class="pts">10</span>🔒 Full Boot<br><small>clear stage 9 · FINALE</small></div>
+      </div>
+    </div>
+
+    <!-- ============ CHALLENGE VIEW (Stage 1) ============ -->
+    <div id="view-s1" class="hidden">
+      <p class="back" onclick="showBoard()">‹ back to trail</p>
+      <div class="panel-box">
+        <p style="color:var(--warn);letter-spacing:2px;font-size:12px;">STAGE 1 // STATIC ON THE LINE</p>
+        <div class="story">&gt; MAINTENANCE LOG — AUTO-GENERATED
+
+Unit Zero stopped responding mid-cycle. No crash report. No shutdown
+sequence. Just... static. Recovery crews pulled one surviving artifact:
+a fragment of its flight-recorder log.
+
+The bot's wake protocol keys off its own build identity. The recorder
+won't spell the wake word out — it assumes anyone who built this bot
+knows where that name is written, in public. Read carefully.
+
+Flag format: nodezero{...}</div>
+
+        <div class="row">
+          <button class="btn btn-primary" onclick="viewLog()">👁 Open blackbox_fragment.log</button>
+        </div>
+
+        <div id="logbox" class="log-box hidden"></div>
+
+        <div class="row" style="margin-top:18px;">
+          <button class="btn btn-secondary" onclick="runSolve()">▶ Show how a team solves it</button>
+        </div>
+        <div id="term" class="term hidden"></div>
+
+        <form class="row" style="margin-top:20px;" onsubmit="return submitFlag()">
+          <span class="prompt">flag&gt;</span>
+          <input id="flagin" placeholder="nodezero{...}" autocomplete="off" style="min-width:280px;">
+          <button class="btn btn-primary">SUBMIT</button>
+          <span id="result"></span>
+        </form>
+        <p style="color:var(--muted);font-size:12px;margin-top:10px;">
+          Hint: one line in the boot ENVIRONMENT block isn't marked <code>(nominal)</code>.
+          Look up that ROS 2 distro's codename. (Demo answer: <code>nodezero{hawksbill}</code>)</p>
+      </div>
+    </div>
+
+    <!-- ============ CHALLENGE VIEW (Stage 2) ============ -->
+    <div id="view-s2" class="hidden">
+      <p class="back" onclick="showBoard()">‹ back to trail</p>
+      <div class="panel-box">
+        <p style="color:var(--warn);letter-spacing:2px;font-size:12px;">STAGE 2 // SIGN OF LIFE</p>
+        <div class="story">&gt; You recovered Unit Zero's WAKE WORD in Stage 1.
+
+Clone the handshake workspace, build it, and run the node. It boots DORMANT and
+won't respond until it hears the correct wake word. Discover its service with
+the ROS 2 tools and call it with the wake word — one call, and the unit answers.
+
+Flag format: nodezero{...}</div>
+
+        <div class="term">team@ubuntu:~/ros2_ws$ ros2 run handshake handshake_node
+[handshake_node] UNIT ZERO handshake process -- state: DORMANT
+[handshake_node] waiting for wake word...
+
+team@ubuntu:~$ ros2 service list
+/unit_zero/wake
+---</div>
+
+        <div class="row" style="margin-top:16px;">
+          <span class="prompt">$ ros2 service call /unit_zero/wake handshake_interfaces/srv/Wake "{word:</span>
+          <input id="wakein" placeholder="wake word from Stage 1" autocomplete="off" style="min-width:200px;">
+          <button class="btn btn-secondary" onclick="setWake()">CALL SERVICE</button>
+        </div>
+        <div id="s2resp" class="term hidden"></div>
+
+        <form class="row" style="margin-top:20px;" onsubmit="return submitFlagS2()">
+          <span class="prompt">flag&gt;</span>
+          <input id="flagin2" placeholder="nodezero{...}" autocomplete="off" style="min-width:280px;">
+          <button class="btn btn-primary">SUBMIT</button>
+          <span id="result2"></span>
+        </form>
+        <p style="color:var(--muted);font-size:12px;margin-top:10px;">
+          Hint: <code>ros2 service list</code> reveals <code>/unit_zero/wake</code> — no parameters involved.
+          The word is the animal from Stage 1's distro codename. (Demo answer: <code>nodezero{first_sign_of_life}</code>)</p>
+      </div>
+    </div>
+
+    <!-- ============ SCOREBOARD VIEW ============ -->
+    <div id="view-score" class="hidden">
+      <p class="back" onclick="showBoard()">‹ back to trail</p>
+      <h2 class="section-label">// race status</h2>
+      <table>
+        <thead><tr><th>#</th><th>TEAM</th><th>STAGE</th><th>FINAL FLAG @</th></tr></thead>
+        <tbody id="scorebody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+<script>
+  const FLAG = "nodezero{hawksbill}";
+  let solvedS1 = false;
+
+  const LOG =
+`=== UNIT ZERO :: FLIGHT RECORDER FRAGMENT ===
+[00:00:00.061] boot: bootloader v3 (compat: galactic) ... (nominal)
+[00:00:00.077] boot: filesystem check ............ (nominal)
+[00:00:00.090] env: ROS_DOMAIN_ID=0 .............. (nominal)
+[00:00:00.091] env: RMW_IMPLEMENTATION=rmw_fastrtps_cpp ... (nominal)
+[00:00:00.092] env: <b>ROS_DISTRO=humble</b>
+[00:00:00.093] env: ROS_VERSION=2 ................ (nominal)
+[00:00:00.140] node: /blackbox_node spawned ...... (nominal)
+[00:00:03.199] telemetry: heartbeat 4 ........... (nominal)
+[00:00:03.2--] --- transmission cut mid-cycle ---
+
+# The wake word IS the codename of the ROS distribution this unit actually
+# RUNS ON (the environment it booted with -- not the old compat note). Its
+# name is public. Find that codename. That is the wake word.`;
+
+  function show(id){ ["board","s1","s2","score"].forEach(v=>document.getElementById("view-"+v).classList.add("hidden"));
+                     document.getElementById("view-"+id).classList.remove("hidden"); window.scrollTo(0,0); }
+  function showBoard(){ show("board"); }
+  function showScore(){ renderScore(); show("score"); }
+  function openS1(){ if(!solvedS1) show("s1"); }
+  function openS2(){ if(solvedS1 && !solvedS2) show("s2"); }
+
+  function viewLog(){
+    const d = document.getElementById("logbox");
+    if(!d.classList.contains("hidden")){ d.classList.add("hidden"); return; }
+    d.innerHTML = LOG; d.classList.remove("hidden");
+  }
+  function runSolve(){
+    const t = document.getElementById("term"); t.classList.remove("hidden");
+    t.textContent =
+`[*] skimming fragment ... most lines are (nominal) noise
+[*] decoy: bootloader compat note says 'galactic' -- NOT what it runs on
+[*] odd line out: env: ROS_DISTRO=humble   <-- the real distro
+[*] ROS 2 distributions (docs.ros.org / REP 2000):
+      ... galactic = Galactic Geochelone
+      ... humble   = Humble Hawksbill   <-- match the row to 'humble'
+      ... iron     = Iron Irwini
+[!] trap: every codename is a turtle/tortoise species, so "the turtle
+    name" alone doesn't narrow it -- you must match 'humble' exactly.
+[+] wake word = hawksbill
+[+] flag = nodezero{hawksbill}`;
+  }
+  function submitFlag(){
+    const val = document.getElementById("flagin").value.trim();
+    const r = document.getElementById("result");
+    if(val === FLAG){
+      r.className="result-ok"; r.textContent = "  ✓ SIGNAL RECOVERED";
+      solvedS1 = true;
+      document.getElementById("tile1").classList.add("solved");
+      document.getElementById("tile1").setAttribute("onclick","");
+      document.getElementById("t1status").innerHTML = "■ SOLVED";
+      const t2 = document.getElementById("tile2");
+      t2.classList.remove("locked");
+      t2.setAttribute("onclick","openS2()");
+      t2.querySelector("small").textContent = "OPEN — click to start";
+      document.getElementById("nodecount").textContent = "1";
+      setTimeout(()=>{ alert("SIGNAL RECOVERED ✓\nStage 2 (Sign of Life) has unlocked — use this wake word to make Unit Zero respond."); showBoard(); }, 600);
+    } else {
+      r.className="result-no"; r.textContent = "  ✗ ...signal lost...";
+    }
+    return false;
+  }
+
+  // ---- Stage 2: Sign of Life ----
+  const FLAG2 = "nodezero{first_sign_of_life}";
+  let solvedS2 = false;
+  function setWake(){
+    const w = document.getElementById("wakein").value.trim().toLowerCase();
+    const r = document.getElementById("s2resp"); r.classList.remove("hidden");
+    if(w === "hawksbill"){
+      r.textContent =
+`word: '${w}'}"
+response:
+handshake_interfaces.srv.Wake_Response(success=True, message='UNIT ZERO ONLINE. Handshake accepted.
+nodezero{first_sign_of_life}
+recorder source archived at: node_zero_coldstart.git @ tag cold-start-v1')`;
+    } else if(w){
+      r.textContent = `word: '${w}'}"
+response:
+handshake_interfaces.srv.Wake_Response(success=False, message='REJECTED :: wrong wake word. Unit stays dormant.')`;
+    } else {
+      r.textContent = `(no wake word given — try the codeword from Stage 1)`;
+    }
+  }
+  function submitFlagS2(){
+    const val = document.getElementById("flagin2").value.trim();
+    const r = document.getElementById("result2");
+    if(val === FLAG2){
+      r.className="result-ok"; r.textContent = "  ✓ HANDSHAKE COMPLETE";
+      solvedS2 = true;
+      const t2 = document.getElementById("tile2");
+      t2.classList.add("solved"); t2.setAttribute("onclick","");
+      t2.querySelector("small").textContent = "■ SOLVED";
+      const t3 = document.getElementById("tile3");
+      if(t3){ t3.classList.remove("locked"); t3.querySelector("small").textContent = "OPEN — next stage available"; }
+      document.getElementById("nodecount").textContent = "2";
+      setTimeout(()=>{ alert("HANDSHAKE COMPLETE ✓\nStage 3 (Cold Start) has unlocked — clone the recorder repo and fix the build."); showBoard(); }, 600);
+    } else {
+      r.className="result-no"; r.textContent = "  ✗ ...signal lost...";
+    }
+    return false;
+  }
+
+  function renderScore(){
+    const me = solvedS2 ? "2 / 10" : solvedS1 ? "1 / 10" : "0 / 10";
+    const rows = [
+      ["1","signal_hunters","10 / 10","2026-07-04 14:22:07 ★ KIT"],
+      ["2","null_pointer","8 / 10","—"],
+      ["3","team_demo (you)", me ,"—"],
+      ["4","quiet_spaces","2 / 10","—"],
+    ];
+    document.getElementById("scorebody").innerHTML =
+      rows.map(r=>`<tr class="scorebar"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");
+  }
+</script>
+</body>
+</html>

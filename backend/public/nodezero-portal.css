@@ -1,0 +1,275 @@
+/* =========================================================================
+   NODE ZERO — live portal skin (participant + organizer)
+   Shared stylesheet for the custom backend's two public pages. This is the
+   SPA-native sibling of ../../theme/nodezero.css: same poster palette, same
+   .nz-* vocabulary, same fonts/scanlines/glitch — but hand-authored for these
+   plain HTML pages instead of overriding CTFd's Bootstrap. Keep the two in
+   visual sync. Do NOT reintroduce oracle/ORACLE or RAS{} branding.
+   ========================================================================= */
+
+:root{
+  --bg:#080d1a;     --panel:#0e1626;  --panel-2:#131f33;
+  --grid:#12203a;   --text:#cfe9ff;   --muted:#5f7d8b;
+  --accent:#35e0ff;            /* NODE ZERO cyan */
+  --accent-dim:#1c5a72;
+  --warn:#ffb454;              /* signal amber */
+  --danger:#ff4d6a;            /* alert red   */
+  --ok:#35e0ff;
+  --easy:#35e0ff; --medium:#ffb454; --hard:#ff4d6a;
+  --mono:'JetBrains Mono','Fira Code',ui-monospace,'SFMono-Regular',monospace;
+}
+
+*{box-sizing:border-box;}
+
+html,body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  margin:0;
+}
+body{
+  background-image:
+    radial-gradient(circle at 50% -10%, rgba(53,224,255,.07), transparent 60%),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:auto, 40px 40px, 40px 40px;
+  background-attachment:fixed;
+  min-height:100vh;
+}
+/* faint CRT scanlines over everything */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,
+    rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+  mix-blend-mode:multiply;
+}
+a{color:var(--accent);text-decoration:none;}
+a:hover{color:#8af0ff;text-shadow:0 0 8px rgba(53,224,255,.45);}
+h1,h2,h3,h4{font-family:var(--mono);letter-spacing:1px;font-weight:800;}
+::selection{background:rgba(53,224,255,.3);color:#fff;}
+
+/* ---- layout ----------------------------------------------------------- */
+.nz-wrap{max-width:1040px;margin:0 auto;padding:0 22px 90px;}
+
+/* ---- navbar ----------------------------------------------------------- */
+.nz-nav{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  padding:14px 26px;
+  background:rgba(6,10,20,.92);
+  border-bottom:1px solid var(--accent-dim);
+  backdrop-filter:blur(4px);
+}
+.nz-brand{
+  font-weight:800;letter-spacing:3px;color:var(--accent);
+  text-shadow:0 0 10px var(--accent);font-size:16px;
+}
+.nz-brand small{color:var(--muted);text-shadow:none;letter-spacing:2px;font-size:10px;display:block;margin-top:2px;font-weight:400;}
+.nz-links{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.nz-links a{
+  color:var(--muted);font-size:13px;letter-spacing:1px;
+  padding:6px 12px;border-radius:4px;cursor:pointer;transition:.15s;
+}
+.nz-links a:hover{color:var(--accent);background:rgba(53,224,255,.06);text-shadow:none;}
+.nz-links a.active{color:var(--accent);background:rgba(53,224,255,.1);border:1px solid var(--accent-dim);}
+
+/* ---- badges / pills --------------------------------------------------- */
+.nz-badge{
+  font-size:11px;padding:3px 10px;border-radius:20px;
+  border:1px solid var(--accent-dim);color:var(--text);letter-spacing:1px;white-space:nowrap;
+}
+.nz-badge.live{border-color:var(--accent);color:var(--accent);}
+.nz-badge.dim{color:var(--muted);}
+.nz-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);margin-right:6px;vertical-align:middle;animation:pulse 1.6s infinite;}
+.nz-dot.off{background:var(--danger);box-shadow:0 0 8px var(--danger);}
+
+/* ---- banners ---------------------------------------------------------- */
+.nz-banner{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:rgba(53,224,255,.07);border:1px dashed var(--accent-dim);
+  color:var(--accent);font-size:12px;letter-spacing:.5px;
+  padding:10px 16px;border-radius:6px;margin:20px 0;
+}
+.nz-banner .kit{color:var(--warn);font-weight:700;letter-spacing:1px;}
+
+/* ---- section labels --------------------------------------------------- */
+.nz-label{
+  color:var(--warn);letter-spacing:2px;text-transform:uppercase;
+  font-size:12px;margin:34px 0 14px;display:flex;align-items:center;gap:10px;
+}
+.nz-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--accent-dim),transparent);}
+
+/* ---- panels / cards --------------------------------------------------- */
+.nz-panel{
+  background:var(--panel);border:1px solid var(--accent-dim);
+  border-radius:8px;padding:24px;
+}
+
+/* ---- forms / inputs --------------------------------------------------- */
+label.nz-field{display:block;margin-bottom:16px;}
+label.nz-field span{display:block;color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+input.nz-input{
+  width:100%;background:#0a111e;color:var(--text);
+  border:1px solid var(--accent-dim);border-radius:5px;
+  padding:11px 13px;font-family:var(--mono);font-size:14px;
+}
+input.nz-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(53,224,255,.2);}
+input.nz-input::placeholder{color:var(--muted);opacity:.7;}
+
+/* ---- buttons ---------------------------------------------------------- */
+.nz-btn{
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  background:var(--accent);color:#04121a;font-weight:700;letter-spacing:1px;
+  border:none;border-radius:5px;padding:11px 20px;
+  font-family:var(--mono);font-size:13px;cursor:pointer;transition:.15s;
+}
+.nz-btn:hover{background:#7fecff;box-shadow:0 0 16px rgba(53,224,255,.5);}
+.nz-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+.nz-btn.ghost{background:transparent;color:var(--text);border:1px solid var(--accent-dim);}
+.nz-btn.ghost:hover{border-color:var(--accent);color:var(--accent);background:rgba(53,224,255,.06);box-shadow:none;}
+
+/* ---- hero (participant login) ---------------------------------------- */
+.nz-hero{text-align:center;padding:30px 0 6px;}
+.nz-glyph{
+  color:var(--accent);text-shadow:0 0 12px rgba(53,224,255,.4);
+  font-size:13px;line-height:1.4;margin:0 0 16px;white-space:pre;
+}
+.nz-hero h1{
+  font-size:clamp(30px,7vw,58px);letter-spacing:4px;color:var(--text);margin:.1em 0;
+}
+.nz-status{
+  display:inline-block;margin-bottom:14px;padding:4px 12px;border-radius:3px;
+  border:1px solid var(--warn);color:var(--warn);
+  font-size:11px;letter-spacing:2px;animation:pulse 1.6s infinite;
+}
+.nz-lead{color:var(--muted);max-width:600px;margin:14px auto 0;line-height:1.7;font-size:14px;}
+.nz-lead b{color:var(--text);}
+
+/* ---- progress bar ----------------------------------------------------- */
+.nz-progress-wrap{display:flex;align-items:center;gap:14px;margin:6px 0 4px;flex-wrap:wrap;}
+.nz-progress{flex:1;min-width:200px;height:10px;background:#0a111e;border:1px solid var(--accent-dim);border-radius:20px;overflow:hidden;}
+.nz-progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-dim),var(--accent));
+  box-shadow:0 0 12px rgba(53,224,255,.6);transition:width .5s ease;border-radius:20px;}
+.nz-progress-txt{color:var(--text);font-size:13px;letter-spacing:1px;white-space:nowrap;}
+.nz-progress-txt b{color:var(--accent);font-size:16px;}
+
+/* ---- the trail board (stage tiles) ----------------------------------- */
+.nz-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.nz-tile{
+  position:relative;padding:18px 18px 16px;border:1px solid var(--accent-dim);
+  border-radius:8px;background:var(--panel);overflow:hidden;transition:transform .15s,box-shadow .15s;
+}
+.nz-tile .num{
+  font-size:11px;color:var(--muted);letter-spacing:2px;
+}
+.nz-tile .title{font-size:15px;color:var(--text);margin:8px 0 10px;line-height:1.3;font-weight:700;}
+.nz-tile .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.nz-tile .state{font-size:11px;letter-spacing:1px;color:var(--muted);}
+.nz-tile .diff{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid;}
+.nz-tile .diff.easy{color:var(--easy);border-color:var(--easy);}
+.nz-tile .diff.medium{color:var(--medium);border-color:var(--medium);}
+.nz-tile .diff.hard{color:var(--hard);border-color:var(--hard);}
+.nz-tile .pts{position:absolute;top:16px;right:16px;color:var(--warn);font-size:13px;font-weight:700;}
+
+/* open + clickable */
+.nz-tile.open{cursor:pointer;}
+.nz-tile.open:hover{transform:translateY(-3px);box-shadow:0 0 20px rgba(53,224,255,.3);border-color:var(--accent);}
+.nz-tile.open::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);box-shadow:0 0 12px var(--accent);}
+/* solved */
+.nz-tile.solved{border-color:var(--accent);box-shadow:inset 0 0 16px rgba(53,224,255,.14);}
+.nz-tile.solved::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);}
+.nz-tile.solved .state{color:var(--accent);}
+/* locked */
+.nz-tile.locked{opacity:.42;filter:grayscale(.55);cursor:not-allowed;}
+.nz-tile.finale{border-style:dashed;}
+.nz-tile.finale .title::after{content:" ★";color:var(--warn);}
+
+/* ---- stage detail ----------------------------------------------------- */
+.nz-back{color:var(--muted);cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;}
+.nz-back:hover{color:var(--accent);}
+.nz-stage-head{color:var(--warn);letter-spacing:2px;font-size:13px;margin:0 0 6px;}
+.nz-flag-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px;}
+.nz-flag-row .prompt{color:var(--accent);font-weight:700;}
+.nz-flag-row input{flex:1;min-width:220px;}
+.nz-result{font-size:13px;letter-spacing:.5px;min-height:18px;margin-top:12px;}
+.nz-result.ok{color:var(--accent);}
+.nz-result.no{color:var(--danger);}
+
+/* ---- tables / leaderboard -------------------------------------------- */
+table.nz-table{width:100%;border-collapse:collapse;font-size:13px;}
+table.nz-table th,table.nz-table td{text-align:left;padding:10px 14px;border-bottom:1px solid #122033;white-space:nowrap;}
+table.nz-table th{color:var(--warn);letter-spacing:1px;text-transform:uppercase;font-size:11px;position:sticky;top:0;background:var(--panel);}
+table.nz-table tbody tr{transition:background .15s;}
+table.nz-table tbody tr:hover{background:rgba(53,224,255,.05);}
+table.nz-table td .mini{color:var(--muted);font-size:11px;}
+/* champion (KIT winner) row */
+tr.champion td{color:var(--accent)!important;font-weight:700;background:rgba(53,224,255,.08);}
+tr.champion td:first-child::before{content:"★ ";color:var(--warn);}
+.kit-badge{background:var(--warn);color:#1a1204;font-weight:800;font-size:10px;letter-spacing:1px;
+  padding:2px 8px;border-radius:20px;margin-left:8px;}
+.fin-badge{color:var(--muted);font-size:10px;letter-spacing:1px;margin-left:8px;border:1px solid var(--accent-dim);padding:1px 7px;border-radius:20px;}
+.mini-bar{display:inline-block;width:70px;height:6px;background:#0a111e;border-radius:10px;overflow:hidden;vertical-align:middle;margin-right:8px;border:1px solid var(--accent-dim);}
+.mini-bar > i{display:block;height:100%;background:var(--accent);}
+
+/* ---- organizer severity ---------------------------------------------- */
+tr.sev-HIGH{background:rgba(255,77,106,.12);}
+tr.sev-MEDIUM{background:rgba(255,180,84,.10);}
+tr.sev-LOW{background:rgba(53,224,255,.06);}
+.sev{font-weight:800;padding:1px 8px;border-radius:3px;font-size:11px;letter-spacing:1px;}
+.sev.HIGH{color:var(--danger);border:1px solid var(--danger);}
+.sev.MEDIUM{color:var(--warn);border:1px solid var(--warn);}
+.sev.LOW{color:var(--accent);border:1px solid var(--accent);}
+.res-ok{color:var(--accent);} .res-no{color:var(--danger);}
+.nz-scroll{overflow:auto;max-height:380px;}
+.nz-scroll code{color:var(--accent);font-size:11px;word-break:break-all;white-space:normal;}
+.nz-empty{color:var(--muted);font-size:12px;padding:14px;text-align:center;letter-spacing:1px;}
+
+/* organizer stat cards */
+.nz-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:18px 0;}
+.nz-stat{background:var(--panel);border:1px solid var(--accent-dim);border-radius:8px;padding:16px 18px;}
+.nz-stat .n{font-size:26px;color:var(--accent);font-weight:800;line-height:1;}
+.nz-stat .n.warn{color:var(--warn);} .nz-stat .n.danger{color:var(--danger);}
+.nz-stat .l{color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-top:8px;}
+
+/* ---- toast (live solve notifications) -------------------------------- */
+.nz-toasts{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:320px;}
+.nz-toast{
+  background:var(--panel-2);border:1px solid var(--accent);border-left:3px solid var(--accent);
+  border-radius:6px;padding:12px 16px;font-size:12.5px;color:var(--text);
+  box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(53,224,255,.15);
+  animation:toastIn .3s ease, toastOut .4s ease 5.2s forwards;
+}
+.nz-toast b{color:var(--accent);}
+.nz-toast.kit{border-color:var(--warn);border-left-color:var(--warn);}
+.nz-toast.kit b{color:var(--warn);}
+@keyframes toastIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{to{transform:translateX(40px);opacity:0}}
+
+/* ---- effects ---------------------------------------------------------- */
+.hidden{display:none!important;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.glitch{position:relative;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;left:0;top:0;width:100%;overflow:hidden;}
+.glitch::before{color:var(--accent);transform:translateX(-2px);clip-path:inset(0 0 55% 0);opacity:.7;animation:gl1 2.6s infinite linear alternate;}
+.glitch::after{color:var(--warn);transform:translateX(2px);clip-path:inset(55% 0 0 0);opacity:.7;animation:gl2 2.2s infinite linear alternate;}
+@keyframes gl1{0%{transform:translate(-2px,0)}50%{transform:translate(2px,-1px)}100%{transform:translate(-1px,1px)}}
+@keyframes gl2{0%{transform:translate(2px,0)}50%{transform:translate(-2px,1px)}100%{transform:translate(1px,-1px)}}
+.cursor::after{content:"_";color:var(--accent);animation:blink 1s steps(1) infinite;}
+@keyframes blink{50%{opacity:0}}
+
+/* ---- stage brief / attachments / hints -------------------------------- */
+.nz-brief{color:var(--text);line-height:1.7;font-size:13.5px;}
+.nz-brief p{margin:0 0 10px;}
+.nz-brief code{background:#0a1120;border:1px solid var(--accent-dim);border-radius:4px;padding:1px 5px;color:var(--accent);font-size:12.5px;}
+.nz-quote{border-left:2px solid var(--accent-dim);padding:6px 12px;margin:0 0 10px;color:var(--muted);background:rgba(53,224,255,.04);}
+.nz-code{background:#070c16;border:1px solid var(--accent-dim);border-radius:6px;padding:10px 12px;margin:0 0 12px;overflow-x:auto;color:#bfe8ff;font-size:12px;line-height:1.55;white-space:pre;}
+.nz-dl{display:inline-flex;align-items:center;gap:6px;margin:0 8px 8px 0;padding:7px 12px;border:1px solid var(--accent-dim);border-radius:6px;color:var(--accent);text-decoration:none;font-size:12.5px;background:rgba(53,224,255,.05);}
+.nz-dl:hover{background:rgba(53,224,255,.14);text-shadow:0 0 8px rgba(53,224,255,.45);}
+.nz-hint{margin:0 0 8px;border:1px solid var(--accent-dim);border-radius:6px;background:#0a1120;}
+.nz-hint summary{cursor:pointer;padding:8px 12px;color:var(--warn);font-size:12.5px;list-style:none;}
+.nz-hint summary::-webkit-details-marker{display:none;}
+.nz-hint summary::before{content:"▸ ";color:var(--muted);}
+.nz-hint[open] summary::before{content:"▾ ";}
+.nz-hint>div{padding:0 12px 10px;color:var(--muted);font-size:12.5px;line-height:1.6;}
+.nz-dl.sm{margin:0 4px 2px 0;padding:3px 8px;font-size:11px;}
