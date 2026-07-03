@@ -6,21 +6,29 @@ type: standard
 state: visible
 
 description: |
-  > The cipher named a recording: `mission_047`. Unit Zero logged its last real
-  > mission to a rosbag before everything went quiet. The answer is in there —
-  > scattered.
+  > The cipher named a recording: `mission_047`. Unit Zero logged its last 
+  > real mission to a rosbag before everything went quiet. The answer is 
+  > in there scattered.
 
   Inspect and replay the bag on your ROS 2 Humble machine. One obscure topic
   carries the flag **one character per message**, and the messages don't arrive
   in tidy order — reconstruct the sequence (by index / timestamp) to read it.
 
+  **Topics aren't latched — start listening *before* you play, or you'll miss
+  the messages published while you were still setting up.**
+
   ```
   git clone https://github.com/Y-Sanjana/nodezero.git node_zero_mission047
   ros2 bag info node_zero_mission047/mission_047
+
+  # terminal 1 — start this FIRST and leave it running:
+  ros2 topic echo <the-topic-info-revealed> > capture.log
+
+  # terminal 2 — then play the bag:
   ros2 bag play node_zero_mission047/mission_047
-  # in another terminal:
-  ros2 topic echo <the-topic-info-revealed>
   ```
+
+  Missed some anyway? The bag doesn't change between runs — just replay it.
 
   ---
   Skills: `ros2 bag info/play`, `rosbag2_py` reader, ordering/reassembly.
