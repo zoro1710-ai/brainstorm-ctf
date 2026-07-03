@@ -12,16 +12,13 @@ description: |
   > The recovery log handed you a scrambled line. It's not damaged — it's
   > *enciphered*.
 
-  Take the garbled log text and apply a classical cipher shift to it.
+  The machine speaks in a broken tongue. Its thoughts have been rotated through the ancient wheel of Caesar. Re-align to unveil the truth.
+  Dashes and dots hold the weight of the rotation. 
+  Decode the signal.
+  > **--...**
 
-  > **Shift: `--...`**
-
-  Decoded, the plaintext names the next artifact to chase.
-
-  [⬇ Download corrupted.log] (attach via Admin → Challenge → Files)
 
   ---
-  Skills: classical ciphers (Caesar / Vigenère), Morse code.
   Flag format: `nodezero{...}`  •  Stage 4 of 10.
 
 # ORGANIZER: Caesar over the log text; shift = 7, given in the description as
