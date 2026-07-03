@@ -99,6 +99,18 @@ CREATE TABLE IF NOT EXISTS solves (
 );
 CREATE INDEX IF NOT EXISTS idx_solves_stage ON solves(stage_number, solved_at_ms);
 
+-- Tracks hint unlocks per team -- used to deduct points from score.
+CREATE TABLE IF NOT EXISTS hint_unlocks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  team_id INTEGER NOT NULL REFERENCES teams(id),
+  stage_number INTEGER NOT NULL,
+  hint_index INTEGER NOT NULL,   -- 0-based index into the hints array
+  cost INTEGER NOT NULL DEFAULT 0,
+  unlocked_at TEXT NOT NULL,
+  UNIQUE(team_id, stage_number, hint_index)
+);
+CREATE INDEX IF NOT EXISTS idx_hint_unlocks_team ON hint_unlocks(team_id);
+
 -- Append-only anti-cheat findings, evidence attached as JSON.
 CREATE TABLE IF NOT EXISTS anticheat_alerts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

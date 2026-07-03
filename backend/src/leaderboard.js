@@ -29,7 +29,10 @@ function computeLeaderboard(db) {
       'SELECT COUNT(*) AS n FROM submissions WHERE team_id = ? AND is_correct = 0'
     ).get(team.id).n;
 
-    const score = solves.reduce((sum, s) => sum + s.stage_number * 100, 0);
+    const hintCost = (db.prepare(
+      'SELECT COALESCE(SUM(cost), 0) AS total FROM hint_unlocks WHERE team_id = ?'
+    ).get(team.id) || {}).total || 0;
+    const score = solves.reduce((sum, s) => sum + s.stage_number * 100, 0) - hintCost;
     const isWinner = stagesCleared >= maxStage; // finished the finale (may be true for >1 team)
 
     return {

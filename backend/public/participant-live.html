@@ -262,15 +262,61 @@
       if (hints.length) {
         html += '<p class="nz-label" style="margin:16px 0 6px;">hints</p>';
         html += hints.map(function (h, i) {
-          var cost = (h.cost != null) ? ' <span class="mini">(cost ' + h.cost + ')</span>' : '';
-          return '<details class="nz-hint"><summary>Hint ' + (i + 1) + cost + '</summary>' +
-                 '<div>' + renderDesc(h.content) + '</div></details>';
+          if (h.unlocked) {
+            // Already unlocked — show content directly
+            return '<div class="nz-hint unlocked">' +
+              '<span class="nz-hint-title">Hint ' + (i + 1) + ' <span class="mini" style="color:var(--warn)">−' + h.cost + ' pts spent</span></span>' +
+              '<div class="nz-hint-body">' + renderDesc(h.content) + '</div>' +
+            '</div>';
+          } else {
+            // Locked — show cost and unlock button
+            var costLabel = h.cost > 0 ? '−' + h.cost + ' pts' : 'free';
+            return '<div class="nz-hint locked" id="hint-' + n + '-' + i + '">' +
+              '<span class="nz-hint-title">Hint ' + (i + 1) + ' <span class="mini">(' + costLabel + ')</span></span>' +
+              '<button class="nz-btn nz-hint-btn" onclick="unlockHint(' + n + ',' + i + ',this)">[ UNLOCK HINT ]</button>' +
+            '</div>';
+          }
         }).join('');
       }
       body.innerHTML = html;
     }).catch(function () { body.innerHTML = '<div class="nz-quote">backend unreachable</div>'; });
     document.getElementById('flagin').focus();
   }
+
+  function unlockHint(stageN, hintI, btn) {
+    btn.disabled = true;
+    btn.textContent = 'unlocking...';
+    api('/stages/' + stageN + '/hints/' + hintI + '/unlock', { method: 'POST' }).then(function (res) {
+      if (res.status === 200 && res.body.ok) {
+        var container = document.getElementById('hint-' + stageN + '-' + hintI);
+        if (container) {
+          var spent = res.body.already_unlocked ? '(already unlocked)' : ('−' + res.body.cost + ' pts spent');
+          container.className = 'nz-hint unlocked';
+          container.innerHTML =
+            '<span class="nz-hint-title">Hint ' + (hintI + 1) + ' <span class="mini" style="color:var(--warn)">' + spent + '</span></span>' +
+            '<div class="nz-hint-body">' + renderDesc(res.body.content) + '</div>';
+        }
+      } else {
+        btn.disabled = false;
+        btn.textContent = '[ UNLOCK HINT ]';
+        toast('Failed to unlock hint: ' + ((res.body && res.body.error) || 'error'));
+      }
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = '[ UNLOCK HINT ]';
+      toast('backend unreachable');
+    });
+  }
+
+  function toast(msg) {
+    var box = document.getElementById('toasts');
+    var el = document.createElement('div');
+    el.className = 'nz-toast';
+    el.textContent = msg;
+    box.appendChild(el);
+    setTimeout(function () { el.remove(); }, 4000);
+  }
+
 
   function submitFlag() {
     var flag = document.getElementById('flagin').value.trim();
