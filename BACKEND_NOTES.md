@@ -28,7 +28,7 @@ doesn't give you out of the box:
    a first-class feature, not something bolted on via CTFd's admin export.
 
 None of that is impossible in CTFd (plugins could get you there), but for an
-8-team, 10-stage, single-organizer event, a ~1,400-line purpose-built Node
+8-team, 8-stage, single-organizer event, a ~1,400-line purpose-built Node
 service was faster to get right and easier to fully audit than a CTFd plugin.
 
 **If you want the CTFd path instead**, follow `README.md` — it's complete and
@@ -65,7 +65,7 @@ Organizer UI: `http://localhost:3000/organizer.html?key=<organizer key>`
 
 Stages are seeded directly from `../challenges/L0*-*/challenge.yml` on every
 boot (upsert, so editing a `challenge.yml` and restarting picks up the
-change). **Stages 3–10 currently have `REPLACE` placeholder flags** in their
+change). **Stages 7–8 currently have draft (not-yet-final) flags** in their
 `challenge.yml` — the backend detects this (`/REPLACE/` regex) and logs which
 stage numbers are still placeholders on every startup. Only Stages 1 and 2
 have real, finished flags as of this writing. This is a content/authoring gap,
@@ -104,12 +104,12 @@ wrong guess" etc.) — that table is organizer-only.
 ## First-finisher / single-winner logic (`src/leaderboard.js`)
 
 Ranking: most stages cleared, then earliest timestamp of the highest stage
-solved (collapses to "earliest Stage-10 timestamp" once a team finishes),
+solved (collapses to "earliest Stage-8 timestamp" once a team finishes),
 then fewest incorrect submissions, per `IEEE_RAS_CTF_Plan.md` §4. This is a
 **race** ranking (completion order + time), not a point-accumulation ranking.
 
 Two leaderboard fields matter and are easy to conflate:
-- `is_winner` — **has cleared all 10 stages.** Can be `true` for more than
+- `is_winner` — **has cleared all 8 stages.** Can be `true` for more than
   one team once the event has run long enough (several teams may eventually
   finish the trail).
 - `is_champion` — **is the physical-kit winner**, i.e. rank === 1 AND
@@ -145,14 +145,14 @@ Booted the server end-to-end and exercised: login, `/me`, `/stages`, wrong/
 correct/duplicate/locked-stage submissions, rate limiting (8 attempts / 15s
 per team, still logs rejected attempts), the full leaderboard, all organizer
 read endpoints, alert review, the live SSE feed (both channels, confirmed
-real-time push on submission), and a full synthetic 10-stage race for two
+real-time push on submission), and a full synthetic 8-stage race for two
 teams to confirm finale detection and first-vs-second-finisher ranking. See
 agent-memory (`backend/.claude/agent-memory/ctf-backend-engineer/`) for the
 full verification log and any future-session context.
 
 ## Known gaps / open items
 
-- Stages 3–10 still need real flags authored in their `challenge.yml`
+- Stages 7-8 still need real flags/artifacts authored in their `challenge.yml`
   (content work, not backend — the backend already handles it correctly
   either way and logs which stages are placeholders on boot).
 - Sessions never expire/rotate. Fine for a short event; revisit if the event

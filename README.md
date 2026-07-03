@@ -1,9 +1,9 @@
 # NODE ZERO — IEEE RAS Robotics CTF (CTFd build)
 
 A **CTFd** deployment reskinned as **NODE ZERO**: Unit Zero's last transmission
-cut off mid-cycle, and teams follow one continuous 10-stage trail to recover the
+cut off mid-cycle, and teams follow one continuous 8-stage trail to recover the
 signal and revive the bot. You inherit teams, auth, flag checking, scoreboard,
-hints, and admin for free, then overlay the theme and seed 10 gated stages.
+hints, and admin for free, then overlay the theme and seed 8 gated stages.
 
 > **Flag format:** `nodezero{...}`  •  **Race rule:** most stages cleared, then earliest final-flag time.
 > **Participants** solve on their **own Ubuntu 22.04 + ROS 2 Humble** — no Docker, no browser IDE.
@@ -24,9 +24,9 @@ ctf-website/
 │  ├─ nodezero.css            ← the full stylesheet (also embedded in theme-header.html)
 │  └─ home-page.html          ← PASTE into Admin → Pages → edit the index "/" page (HTML mode)
 └─ challenges/
-   ├─ README.md               ← import steps + 10-stage master table
+   ├─ README.md               ← import steps + 8-stage master table
    ├─ _templates/per-team-randomizer.py
-   ├─ L01-static-on-the-line/  … through …  L10-full-boot/
+   ├─ L01-static-on-the-line/  … through …  L08-full-boot/
 ```
 
 > **Note on Docker:** `docker-compose.yml` runs the **CTFd server itself**
@@ -65,26 +65,26 @@ Open `http://localhost:8000`, run the setup wizard:
   a strong random password each. Store them in a vault; hand each to its team lead 1:1.
 - **Admin → Config → Email:** disable outbound email (the team emails can be placeholders).
 
-### 5. Seed the 10 stages (with gating + hints)
+### 5. Seed the 8 stages (with gating + hints)
 Easiest is **ctfcli** (challenge-as-code):
 ```bash
 pip install ctfcli
 ctf init                         # point it at your CTFd URL, paste an admin token
                                  # (Admin → Settings → Access Tokens)
-for d in challenges/L0*-* challenges/L10-*; do ctf challenge install ./$d; done
-ctf challenge sync ./challenges/L0*-* ./challenges/L10-*
+for d in challenges/L0*-*; do ctf challenge install ./$d; done
+ctf challenge sync ./challenges/L0*-*
 ```
 Then **verify gating** in Admin → Challenges → each stage → **Requirements**:
 Stage N requires Stage N-1, behaviour **Hidden until unlocked**. (ctfcli sets this
 from each `challenge.yml`; if your version doesn't, add it with two clicks here.)
 
-> Prefer no CLI? Recreate the 10 challenges by hand in **Admin → Challenges → +**,
+> Prefer no CLI? Recreate the 8 challenges by hand in **Admin → Challenges → +**,
 > copy the description/flag/hints from each `challenge.yml`, and set **Requirements**
-> on Stages 2–10. See `challenges/README.md` for the master table.
+> on Stages 2–8. See `challenges/README.md` for the master table.
 
 ### 6. Make the scoreboard a race
 Points are `stage × 100`, so **"most stages cleared" == highest score**, and CTFd's
-natural tiebreak (earliest last solve) crowns the first crew to finish Stage 10.
+natural tiebreak (earliest last solve) crowns the first crew to finish Stage 8.
 Open `/scoreboard` to confirm.
 
 ---
@@ -117,7 +117,7 @@ Per-team randomize the finale (and Stages 5/9) with `challenges/_templates/per-t
 
 ## Go-live checklist
 - [ ] User mode ON, registration **disabled**, 8 team accounts provisioned
-- [ ] All 10 stages present; Stages 2–10 show **🔒 locked** until prereq solved
+- [ ] All 8 stages present; Stages 2–8 show **🔒 locked** until prereq solved
 - [ ] Real flags set (replace `REPLACE` placeholders); finale flag randomized per team
 - [ ] File attachments + git repo links live and tested from a clean Humble VM
 - [ ] Each handoff string (e.g. the wake word `hawksbill`) matches byte-for-byte across stages

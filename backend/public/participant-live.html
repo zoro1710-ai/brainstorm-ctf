@@ -32,7 +32,7 @@
         <div class="nz-status">&#9677; SIGNAL LOST — LAST TRANSMISSION CUT MID-CYCLE</div>
         <h1 class="glitch" data-text="NODE ZERO">NODE ZERO</h1>
         <p class="nz-lead">
-          Ten stages. One continuous trail. Solve one to reveal the next.
+          Eight stages. One continuous trail. Solve one to reveal the next.
           <b>The first crew to recover the full signal wins the kit — and revives the bot.</b>
         </p>
       </div>
@@ -58,12 +58,12 @@
     <section id="view-board" class="hidden">
       <div class="nz-banner">
         <span><span class="nz-dot"></span>LIVE — flags checked server-side, the race updates in real time.</span>
-        <span class="kit">★ FIRST CREW TO CLEAR ALL 10 WINS THE HARDWARE KIT</span>
+        <span class="kit">★ FIRST CREW TO CLEAR ALL 8 WINS THE HARDWARE KIT</span>
       </div>
 
       <p class="nz-label">the trail — recover the signal</p>
       <div class="nz-progress-wrap">
-        <span class="nz-progress-txt"><b id="stagecount">0</b> / <span id="stagetotal">10</span> stages recovered</span>
+        <span class="nz-progress-txt"><b id="stagecount">0</b> / <span id="stagetotal">8</span> stages recovered</span>
         <span class="nz-progress"><i id="progFill" style="width:0%"></i></span>
       </div>
 
@@ -90,7 +90,7 @@
       <p class="nz-back" onclick="showBoard()">&#9664; back to the trail</p>
       <p class="nz-label">race status — completion order (live)</p>
       <div class="nz-banner">
-        <span class="kit">★ Ranking is by <b style="color:var(--warn)">who finishes first</b>, not points. First to Stage 10 takes the kit.</span>
+        <span class="kit">★ Ranking is by <b style="color:var(--warn)">who finishes first</b>, not points. First to Stage 8 takes the kit.</span>
       </div>
       <div class="nz-panel" style="padding:6px 0;">
         <table class="nz-table">
@@ -111,8 +111,8 @@
   var CURRENT_STAGE = null;
   var es = null;
 
-  // --- difficulty split per the plan: 3 easy / 4 medium / 3 hard ---
-  function diffOf(n){ return n <= 3 ? 'easy' : (n <= 7 ? 'medium' : 'hard'); }
+  // --- difficulty split per the plan: 3 easy / 3 medium / 2 hard (8 stages) ---
+  function diffOf(n){ return n <= 3 ? 'easy' : (n <= 6 ? 'medium' : 'hard'); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
   function cleanTitle(t){ return String(t || '').replace(/^L\d+\s*\/\/\s*/, ''); }
@@ -177,7 +177,7 @@
   }
 
   function renderBoard() {
-    var total = STAGES.length || 10;
+    var total = STAGES.length || 8;
     var solved = STAGES.filter(function (s) { return s.solved; }).length;
     document.getElementById('stagecount').textContent = solved;
     document.getElementById('stagetotal').textContent = total;
@@ -342,7 +342,7 @@
   function renderScore(lb) {
     var p = lb ? Promise.resolve(lb) : api('/leaderboard').then(function (res) { return res.body.leaderboard; });
     return p.then(function (rows) {
-      var total = STAGES.length || 10;
+      var total = STAGES.length || 8;
       var mine = TEAM ? TEAM.code : null;
       document.getElementById('scorebody').innerHTML = (rows || []).map(function (r) {
         var pct = total ? (r.stages_cleared / total * 100) : 0;

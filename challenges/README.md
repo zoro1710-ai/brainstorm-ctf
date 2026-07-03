@@ -23,13 +23,15 @@ a point total).
 | 5 | MISSION 047 | Rosbag forensics (with noise-filtering) | **git repo** (per-team) | Stage 4 |
 | 6 | WAKE SEQUENCE | Broken launch + ROS 2 action call | **git repo** | Stage 5 |
 | 7 | DIAGNOSTIC BEEP | Audio / Morse timing | `diagnostic_beep.wav` (+CSV) | Stage 6 |
-| 8 | FULL BOOT (finale) | Full synthesis | **git repo** (per-team flag) | Stage 7 |
+| 8 | FULL BOOT (finale) | turtlesim, 4 faults + teleop/services | **git repo** (per-team flag) | Stage 7 |
 
-> Stages 1–6 have built, verified artifacts and their `flags:` values are
-> final. Stages 7 (Diagnostic Beep) and 8 (Full Boot) still need their
-> real artifacts authored — their `flags:` are draft values, finalize once
-> built. **Per-team randomize Stages 5, 7, and 8** (anti-share) using
-> `_templates/per-team-randomizer.py`.
+> Stages 1–6 and 8 have built, verified artifacts. Stage 7 (Diagnostic Beep)
+> still needs its real `diagnostic_beep.wav` authored — `beep_timing.csv`
+> already works as a verified fallback and decodes correctly, so the stage
+> is solvable today, just not via its primary intended medium. Stage 8's
+> flag is a single shared value for testing — **per-team randomize Stages
+> 5 and 8** (anti-share) using `_templates/per-team-randomizer.py` before
+> go-live.
 
 ## The chain / clue handoffs
 

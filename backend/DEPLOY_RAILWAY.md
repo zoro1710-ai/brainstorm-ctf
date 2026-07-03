@@ -116,8 +116,8 @@ If you want to **re-seed** (fresh teams/DB), clear the volume — e.g. in the sh
 - [ ] `ORGANIZER_KEY` set to your secret; organizer URL loads the dashboard.
 - [ ] `/healthz` returns `{ ok: true }`.
 - [ ] Ran `npm run bundle-challenges` so `backend/challenges` exists in the deploy.
-- [ ] Startup log says `Stages seeded 10` with **no** placeholder warning (all
-      10 flags are real).
+- [ ] Startup log says `Stages seeded 8` with **no** placeholder warning (all
+      8 flags are real).
 - [ ] Spot-check a level in the portal: brief text, hint reveal, and file
       download all render (e.g. Stage 1 → `blackbox_fragment.log`).
 - [ ] Team credentials retrieved and distributed.

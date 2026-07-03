@@ -9,36 +9,67 @@ description: |
   > This is it. Everything you've recovered — the wake word, the codes, the key —
   > comes together here. Bring Unit Zero all the way back online.
 
-  Clone the final boot workspace. It has **several faults at once** (a build
-  error, a wrong QoS, a misnamed topic, a bad param default, a service argument).
-  Fix every one, then send a correctly-formed command using the Stage 7 key
-  within the wake window. Get it right and Unit Zero fully wakes — and hands you
-  the last flag. First team to submit it wins the kit.
+  For this last stretch, Unit Zero's body is a **turtlesim** turtle. Clone the
+  final boot workspace. It has **several faults at once** — a build error, a
+  misnamed topic, a wrong QoS setting, a bad parameter default. Fix them one at
+  a time, don't try to guess them all up front.
 
   ```
-  git clone <REPLACE-git-repo-url>/node_zero_fullboot.git
-  cp -r node_zero_fullboot/full_boot ~/ros2_ws/src/
-  cd ~/ros2_ws && colcon build --packages-select full_boot
+  git clone https://github.com/Y-Sanjana/nodezero.git node_zero_fullboot
+  cp -r node_zero_fullboot/full_boot_interfaces node_zero_fullboot/full_boot ~/ros2_ws/src/
+  cd ~/ros2_ws && colcon build --packages-select full_boot_interfaces full_boot
   source install/setup.bash
   ros2 launch full_boot boot.launch.py
-  # fix the faults, then drive the wake command with your Stage-7 key
   ```
+
+  Once everything is healthy, `/unit_zero/status` tells you plainly what's
+  still missing. Pilot the turtle into the recovery zone (`/turtle1/cmd_vel`,
+  standard ROS 2 teleop), then call the wake service with the key you carried
+  from Stage 7. Get it right and Unit Zero fully wakes — and hands you the
+  last flag. First team to submit it wins the kit.
 
   ---
   Skills: full synthesis — colcon, QoS, topics, params, services, teleop/Twist.
   Flag format: `nodezero{signal_recovered_...}`  •  Stage 8 of 8 — **the kit goes to the first crew here.**
 
-# ORGANIZER: PER-TEAM RANDOMIZE the finale flag (anti-share) — the sim emits a
-# team-specific token on full wake. Absorbs old-draft "Rosbag Replay Attack" idea
-# for the fault set. Multiple simultaneous faults, guiding errors. Author flag below.
+# ORGANIZER: PER-TEAM RANDOMIZE the finale flag (anti-share) before go-live --
+# right now it's one shared flag for testing. Four real faults, all in
+# node_zero_fullboot/full_boot/launch/boot.launch.py plus one in
+# full_boot_interfaces/CMakeLists.txt:
+#   1. BUILD: full_boot_interfaces/CMakeLists.txt references srv/FulBoot.srv
+#      (missing an 'l') -- the file on disk is FullBoot.srv. Clear colcon
+#      error naming the exact line.
+#   2. MISNAMED TOPIC: the launch file remaps supervisor_node's `turtle_pose`
+#      to `/turtle1/pose_bad` instead of `/turtle1/pose` -- no pose data until
+#      fixed (status topic says "AWAITING POSE").
+#   3. WRONG QoS: the launch file sets beacon_node's `durability` param to
+#      'volatile'; supervisor_node's beacon subscription requests
+#      TRANSIENT_LOCAL (hardcoded, correct) -- genuine DDS QoS incompatibility,
+#      visible via `ros2 topic info -v /unit_zero/beacon_ready` or the node's
+#      own "offering/requesting incompatible QoS" warning. Fix = 'transient_local'.
+#   4. BAD PARAM DEFAULT: launch sets `target_radius` to 0.05 (near-impossible
+#      in practice); sane default is ~1.0. status topic shows the current
+#      distance vs required radius, so an absurdly tight radius is visible.
+# Win condition (all checked server-side in supervisor_node's
+# /unit_zero/full_boot service): correct key ("revive", the Stage 7 flag
+# content) AND beacon_ready AND turtle within target_radius of (8.0, 2.0).
+# Verified end-to-end in a real ROS 2 Humble + turtlesim environment: build
+# fails/succeeds exactly as designed, QoS warning reproduces and clears,
+# piloting via ros2 topic pub Twist moves the turtle, teleport + service call
+# returns the flag, wrong key / not-ready / out-of-zone each get a specific
+# rejection reason (not a blanket "REJECTED"). Author the real flag below.
 flags:
   - nodezero{signal_recovered}
 
 hints:
-  - content: "Don't try to fix everything blind. Bring it up once, read each error/warning in order, and fix ONE fault at a time: build first, then QoS/topic-name mismatches (`ros2 topic info -v`), then params, then the service argument."
-    cost: 60
-  - content: "You already learned every one of these skills in earlier stages — this is the same toolkit stacked. The wake command needs your Stage-7 key and must land inside the wake window; watch the node log for the window opening."
-    cost: 120
+  - content: "Don't try to fix everything blind. Bring it up once and read `/unit_zero/status` plus the node logs — they tell you exactly what's still wrong (no pose data, beacon not ready, or the wrong distance/radius numbers)."
+    cost: 50
+  - content: "Two of the faults are visible in the terminal output itself: the colcon build error names its own file and line; a QoS warning names 'incompatible policy: DURABILITY' on `/unit_zero/beacon_ready`. Fix both in `launch/boot.launch.py`."
+    cost: 90
+  - content: "The other two are quieter: the pose subscription is remapped to the wrong topic name (check the launch file's `remappings`), and `target_radius` is set absurdly small (check the launch file's `parameters`). Fix both, then pilot the turtle with `ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist` toward the zone `/unit_zero/status` reports."
+    cost: 130
+  - content: "Call `/unit_zero/full_boot` with the Stage 7 key once you're in the zone and the beacon is ready: `ros2 service call /unit_zero/full_boot full_boot_interfaces/srv/FullBoot \"{key: 'revive'}\"`. The response tells you exactly what's still missing if it rejects."
+    cost: 160
 
 requirements:
   - "L7 // DIAGNOSTIC BEEP"
