@@ -31,7 +31,11 @@ miss messages on a live replay, just replay the bag again; it doesn't
 change between runs. `rosbag2_py`'s `SequentialReader` also works if you'd
 rather read the bag directly instead of replaying it live.
 
+Not everything on that channel is genuine, either. Don't trust every
+message you capture at face value — work out what a real one looks like
+before you start reassembling.
+
 ## When you're done
 
 Reassembling the channel gives you the flag **and** a handoff to the next
-artifact. Read it carefully — it also tells you what key you'll need there.
+artifact. Read it carefully — it also tells you what code you'll need there.

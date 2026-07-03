@@ -1,0 +1,51 @@
+name: "L6 // WAKE SEQUENCE"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 6"
+value: 600
+type: standard
+state: visible
+
+description: |
+  > Unit Zero's wake sequence is up — but it isn't listening where it's
+  > supposed to. Bring the workspace in, get it running, and it comes down
+  > to a single call.
+
+  This one isn't a service this time — it's a ROS 2 **action**. Same idea as
+  Stage 2 (discover it, speak to it, get the flag back), but actions are a
+  different beast: goals, feedback, results. You know the clone → build →
+  source → launch drill from Stages 2 and 3 by now.
+
+  ```
+  git clone https://github.com/Y-Sanjana/nodezero.git node_zero_wakeseq
+  ```
+
+  Launch it, then find out for yourself whether it came up where you'd
+  expect.
+
+  ---
+  Skills: ROS 2 actions (`ros2 action list/info/send_goal`), launch files, params.
+  Flag format: `nodezero{...}`  •  Stage 6 of 8.
+
+# ORGANIZER: single intentional bug -- the launch file overrides the node's
+# `action_name` param with a typo ('/unit_zero/wake_sequenc', missing the
+# final 'e'). `ros2 action list` shows the wrong name until the player edits
+# launch/wake.launch.py and fixes it. Once reachable, ONE
+# `ros2 action send_goal` call with the code (tail of the Stage 5 flag,
+# "flight") returns the flag inline in the result -- no second command needed,
+# same one-call philosophy as Stage 2, just a harder mechanism (actions, not
+# services) and a real bug gating it, unlike Stage 2's zero-bug discovery.
+# Deliberately does NOT walk through clone/build/source/launch in the
+# description -- players have done this exact sequence twice already.
+flags:
+  - nodezero{wake_sequence_online}
+
+hints:
+  - content: "`ros2 action list` won't show `/unit_zero/wake_sequence` — the node registers under whatever name `launch/wake.launch.py` passes it. Open that file and compare its override against the name the challenge expects."
+    cost: 25
+  - content: "It's a one-character typo in the `action_name` parameter inside the launch file. Fix it, rebuild, relaunch, and `ros2 action list` will show `/unit_zero/wake_sequence`."
+    cost: 45
+  - content: "Send the goal directly — one call, no second step: `ros2 action send_goal /unit_zero/wake_sequence wake_sequence_interfaces/action/WakeSequence \"{code: '<tail of your Stage 5 flag>'}\"`. The result carries the flag."
+    cost: 70
+
+requirements:
+  - "L5 // MISSION 047"

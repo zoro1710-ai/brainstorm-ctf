@@ -13,6 +13,11 @@ What it builds, inside <outdir>/mission_047/ (a normal rosbag2 sqlite3 bag):
     hidden message per message, written to the bag in SHUFFLED order (so
     playback order != solve order; the explicit index is what lets you
     reassemble it).
+  - the secret topic ITSELF is also seeded with noise messages (out-of-range
+    "<index>:<char>" pairs, and plain non-conforming decoy strings) so
+    finding the topic is no longer the whole puzzle -- you still have to
+    filter real signal (index in [0, n), exactly one trailing character)
+    from chaff once you're listening to it.
 
 The hidden message is the Stage 5 flag plus the Stage 6 handoff. Change
 MESSAGE below (and FLAG in challenges/L05-mission-047/challenge.yml to match)
@@ -38,7 +43,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from diagnostic_msgs.msg import KeyValue
 
 FLAG = "nodezero{last_flight}"
-MESSAGE = FLAG + " next: uplink_dump.txt. XOR key = tail of this flag."
+MESSAGE = FLAG + " next: node_zero_wakeseq. code = tail of this flag."
 
 SECRET_TOPIC = "/unit_zero/subcarrier"
 BASE_NS = 1_700_000_000_000_000_000  # arbitrary epoch-ish start, nanoseconds
@@ -108,6 +113,38 @@ def diagnostic_msgs_list():
     return out
 
 
+_DECOY_STRINGS = [
+    "PING", "SYNC_LOST", "retry=3", "chk_ok", "noop", "heartbeat",
+    "diag_047", "static....", "carrier_drift", "signal:weak",
+    "buffer_full", "ack", "nack", "idle", "link_flap", "cal:pending",
+]
+
+
+def secret_channel_payloads(rng, message: str):
+    """
+    Real signal: "<index>:<character>" for every index in range(len(message)).
+    Noise, mixed into the SAME channel:
+      - well-formed "<index>:<char>" pairs with an index OUT OF RANGE, so a
+        parser that only trusts indices in [0, len(message)) skips them.
+      - plain strings with no valid "<int>:<char>" shape at all.
+    Real payloads never collide with noise (indices are disjoint ranges), so
+    there's exactly one correct reconstruction -- just more to sift through.
+    """
+    n = len(message)
+    payloads = [f"{i}:{ch}" for i, ch in enumerate(message)]
+
+    noise_count = int(n * 0.55)  # meaningful chaff without burying the signal
+    for _ in range(noise_count // 2):
+        fake_idx = rng.randint(n + 25, n + 999)
+        fake_ch = rng.choice("abcdefghijklmnopqrstuvwxyz0123456789")
+        payloads.append(f"{fake_idx}:{fake_ch}")
+    for _ in range(noise_count - noise_count // 2):
+        payloads.append(rng.choice(_DECOY_STRINGS))
+
+    rng.shuffle(payloads)
+    return payloads
+
+
 def main():
     outdir = sys.argv[1] if len(sys.argv) > 1 else "."
     os.makedirs(outdir, exist_ok=True)
@@ -130,26 +167,25 @@ def main():
     for i, m in enumerate(diagnostic_msgs_list()):
         write_msg(writer, "/diagnostics", m, BASE_NS + i * 4_000_000_000)
 
-    # --- the secret channel: one character per message, index embedded, ---
-    # --- written to the bag in SHUFFLED order so naive playback order is --
-    # --- not solve order. -----------------------------------------------
+    # --- the secret channel: real signal + noise, both shuffled together --
+    # --- so neither write order nor a naive "every message is signal" ----
+    # --- assumption gets you to the answer for free. ----------------------
     n = len(MESSAGE)
-    order = list(range(n))
-    rng.shuffle(order)
-    for write_pos, char_idx in enumerate(order):
-        ch = MESSAGE[char_idx]
+    payloads = secret_channel_payloads(rng, MESSAGE)
+    total = len(payloads)
+    for write_pos, data in enumerate(payloads):
         m = String()
-        m.data = f"{char_idx}:{ch}"
+        m.data = data
         # timestamps assigned in shuffled (write) order, spread across the
         # same ~60s window, so `ros2 bag play` emits them out of solve-order.
-        t_ns = BASE_NS + write_pos * int(60_000_000_000 / n)
+        t_ns = BASE_NS + write_pos * int(60_000_000_000 / total)
         write_msg(writer, SECRET_TOPIC, m, t_ns)
 
     del writer
     rclpy.shutdown()
 
     print(f"[+] wrote {bag_path}")
-    print(f"[+] secret topic: {SECRET_TOPIC}  ({n} messages, shuffled write order)")
+    print(f"[+] secret topic: {SECRET_TOPIC}  ({total} messages: {n} signal + {total - n} noise)")
     print(f"[+] hidden message ({n} chars): {MESSAGE!r}")
 
 

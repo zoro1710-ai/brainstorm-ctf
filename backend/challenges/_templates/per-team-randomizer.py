@@ -6,8 +6,8 @@ Ported forward from the old L1-drivetrain draft. Use this for any stage that
 should hand each team a UNIQUE flag so a leaked flag is useless to other teams
 and no answer can be looked up online. Recommended for the randomizable stages:
   - L5 // MISSION 047   (flag spread through a per-team rosbag / topic dump)
-  - L9 // DIAGNOSTIC BEEP (per-team Morse key)
-  - L10 // FULL BOOT    (finale token emitted on full wake — MUST be per-team)
+  - L7 // DIAGNOSTIC BEEP (per-team Morse key)
+  - L8 // FULL BOOT     (finale token emitted on full wake — MUST be per-team)
 
 What it does, per team:
   1. builds a UNIQUE flag                 -> nodezero{<prefix>_<token>}

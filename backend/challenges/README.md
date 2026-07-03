@@ -1,8 +1,8 @@
-# Challenges — NODE ZERO (10-stage linear trail)
+# Challenges — NODE ZERO (8-stage linear trail)
 
-Ten gated stages = one continuous trail to revive Unit Zero. Each stage is one
+Eight gated stages = one continuous trail to revive Unit Zero. Each stage is one
 CTFd challenge; solving it reveals the next. The kit goes to the **first team to
-clear Stage 10** (ties broken by that stage's submission timestamp — a race, not
+clear Stage 8** (ties broken by that stage's submission timestamp — a race, not
 a point total).
 
 - **Flag format:** `nodezero{...}`
@@ -19,39 +19,37 @@ a point total).
 | 1 | STATIC ON THE LINE | Docs treasure-hunt (non-ROS) | `blackbox_fragment.log` (Files) | — (open) |
 | 2 | SIGN OF LIFE | ROS 2 service call (wake word) | **git repo** | Stage 1 |
 | 3 | COLD START | Broken colcon build | **git repo** | Stage 2 |
-| 4 | CORRUPTED LOG | Cipher I (Caesar/Vigenère) | `corrupted.log` (Files) | Stage 3 |
-| 5 | MISSION 047 | Rosbag forensics | **git repo** (per-team) | Stage 4 |
-| 6 | UPLINK DUMP | Cipher II (Base64 + XOR) | `uplink_dump.txt` (Files) | Stage 5 |
-| 7 | QUIET SPACES ⭐ | Whitespace steganography | `archive_notes.log` (Files) | Stage 6 |
-| 8 | WAKE SEQUENCE | Multi-step ROS 2 debug | **git repo** | Stage 7 |
-| 9 | DIAGNOSTIC BEEP | Audio / Morse timing | `diagnostic_beep.wav` (+CSV) | Stage 8 |
-| 10 | FULL BOOT (finale) | Full synthesis | **git repo** (per-team flag) | Stage 9 |
+| 4 | CORRUPTED LOG | Cipher I (Caesar + Morse-coded key) | `corrupted.log` (Files) | Stage 3 |
+| 5 | MISSION 047 | Rosbag forensics (with noise-filtering) | **git repo** (per-team) | Stage 4 |
+| 6 | WAKE SEQUENCE | Broken launch + ROS 2 action call | **git repo** | Stage 5 |
+| 7 | DIAGNOSTIC BEEP | Audio / Morse timing | `diagnostic_beep.wav` (+CSV) | Stage 6 |
+| 8 | FULL BOOT (finale) | Full synthesis | **git repo** (per-team flag) | Stage 7 |
 
-> Only Stage 1's flag (`nodezero{hawksbill}`) is final. Every other
-> `flags:` value marked `REPLACE` is a placeholder — set it to whatever the
-> real authored artifact produces, and **per-team randomize Stages 5, 9, 10**
-> (anti-share) using `_templates/per-team-randomizer.py`.
+> Stages 1–6 have built, verified artifacts and their `flags:` values are
+> final. Stages 7 (Diagnostic Beep) and 8 (Full Boot) still need their
+> real artifacts authored — their `flags:` are draft values, finalize once
+> built. **Per-team randomize Stages 5, 7, and 8** (anti-share) using
+> `_templates/per-team-randomizer.py`.
 
 ## The chain / clue handoffs
 
 1 → 2 : the recovered wake word (`hawksbill`) is the input Stage 2 needs.
 2 → 3 : Unit Zero's response names the git repo + tag for Cold Start.
 3 → 4 : the `package.xml` `<version>` IS the Caesar shift.
-4 → 5 : decoded plaintext names the `mission_047` rosbag + topic.
-5 → 6 : reconstructed message names the uplink dump + XOR key (= its own tail).
-6 → 7 : decoded text says "mind the quiet spaces" + names `archive_notes.log`.
-7 → 8 : whitespace bits spell the service name + code for the wake call.
-8 → 9 : service response references `diagnostic_beep.wav`.
-9 → 10 : decoded Morse word = finale key + names the full-boot repo.
+4 → 5 : decoded plaintext names the `mission_047` rosbag.
+5 → 6 : reconstructed message (after filtering noise from the channel) names
+        the `node_zero_wakeseq` repo + the code (= its own tail).
+6 → 7 : action result references `diagnostic_beep.wav`.
+7 → 8 : decoded Morse word = finale key + names the full-boot repo.
 
 ## Import (ctfcli)
 
 ```bash
 pip install ctfcli
 ctf init                                   # URL + admin access token
-for d in L01-static-on-the-line L02-last-frame L03-cold-start \
-         L04-corrupted-log L05-mission-047 L06-uplink-dump \
-         L07-quiet-spaces L08-wake-sequence L09-diagnostic-beep L10-full-boot; do
+for d in L01-static-on-the-line L02-sign-of-life L03-cold-start \
+         L04-corrupted-log L05-mission-047 L06-wake-sequence \
+         L07-diagnostic-beep L08-full-boot; do
   ctf challenge install ./$d
 done
 ctf challenge sync ./*                      # pushes hints, values, requirements
@@ -60,7 +58,7 @@ ctf challenge sync ./*                      # pushes hints, values, requirements
 ## Import (manual, no CLI)
 
 Admin → Challenges → **+** for each stage. Copy `name`, `description`, `value`,
-`flags`, `hints`. Then on Stages 2–10 open the challenge → **Requirements** → add
+`flags`, `hints`. Then on Stages 2–8 open the challenge → **Requirements** → add
 the previous stage, behaviour **Hidden until unlocked** — that produces the 🔒
 locked tiles and the linear trail.
 
@@ -80,7 +78,14 @@ the package folder, NOT this `challenges/` tree (which holds flags + solutions).
 - **Stage 2:** push `L02-sign-of-life/node_zero_handshake/` as its own repo.
   Its flag is stored base64 in `handshake_node.py` and decoded at runtime, so a
   `grep nodezero` on the clone finds nothing — it's safe to host where teams reach it.
-- Same rule for future ws stages (Cold Start, Wake Sequence, Full Boot): extract the
+- **Stage 3:** push `L03-cold-start/node_zero_coldstart/`. Same base64-at-runtime rule.
+- **Stage 5:** push `L05-mission-047/node_zero_mission047/`. The flag lives inside the
+  compiled rosbag, spread one character per message and mixed with noise — not
+  reconstructable via a plain `grep`/`strings` scan. The organizer-only
+  `_organizer_generate_bag.py` (has the plaintext message in the clear) stays out
+  of this folder and is never pushed to the participant-facing repo.
+- **Stage 6:** push `L06-wake-sequence/node_zero_wakeseq/`. Same base64-at-runtime rule.
+- Same rule for the future Stage 8 (Full Boot) workspace: extract the
   package into its own repo and **never commit the literal flag** in greppable form.
 - Each repo already has a `.gitignore` for `build/ install/ log/ __pycache__/`.
 
@@ -96,5 +101,5 @@ git push -u origin main
 ## Per-team randomization
 
 `_templates/per-team-randomizer.py` builds a unique `nodezero{...}` flag per team
-and an organizer-only `answer_key.csv`. Use it for Stages 5, 9, 10. Give each
+and an organizer-only `answer_key.csv`. Use it for Stages 5, 7, and 8. Give each
 team ONLY its own artifact.

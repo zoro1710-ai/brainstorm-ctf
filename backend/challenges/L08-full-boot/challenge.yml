@@ -1,0 +1,44 @@
+name: "L8 // FULL BOOT — SIGNAL RECOVERED (FINALE)"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 8"
+value: 800
+type: standard
+state: visible
+
+description: |
+  > This is it. Everything you've recovered — the wake word, the codes, the key —
+  > comes together here. Bring Unit Zero all the way back online.
+
+  Clone the final boot workspace. It has **several faults at once** (a build
+  error, a wrong QoS, a misnamed topic, a bad param default, a service argument).
+  Fix every one, then send a correctly-formed command using the Stage 7 key
+  within the wake window. Get it right and Unit Zero fully wakes — and hands you
+  the last flag. First team to submit it wins the kit.
+
+  ```
+  git clone <REPLACE-git-repo-url>/node_zero_fullboot.git
+  cp -r node_zero_fullboot/full_boot ~/ros2_ws/src/
+  cd ~/ros2_ws && colcon build --packages-select full_boot
+  source install/setup.bash
+  ros2 launch full_boot boot.launch.py
+  # fix the faults, then drive the wake command with your Stage-7 key
+  ```
+
+  ---
+  Skills: full synthesis — colcon, QoS, topics, params, services, teleop/Twist.
+  Flag format: `nodezero{signal_recovered_...}`  •  Stage 8 of 8 — **the kit goes to the first crew here.**
+
+# ORGANIZER: PER-TEAM RANDOMIZE the finale flag (anti-share) — the sim emits a
+# team-specific token on full wake. Absorbs old-draft "Rosbag Replay Attack" idea
+# for the fault set. Multiple simultaneous faults, guiding errors. Author flag below.
+flags:
+  - nodezero{signal_recovered}
+
+hints:
+  - content: "Don't try to fix everything blind. Bring it up once, read each error/warning in order, and fix ONE fault at a time: build first, then QoS/topic-name mismatches (`ros2 topic info -v`), then params, then the service argument."
+    cost: 60
+  - content: "You already learned every one of these skills in earlier stages — this is the same toolkit stacked. The wake command needs your Stage-7 key and must land inside the wake window; watch the node log for the window opening."
+    cost: 120
+
+requirements:
+  - "L7 // DIAGNOSTIC BEEP"

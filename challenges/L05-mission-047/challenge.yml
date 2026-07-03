@@ -10,10 +10,14 @@ description: |
   > real mission to a rosbag before everything went quiet. The answer is 
   > in there scattered.
 
-  Inspect and replay the bag on your ROS 2 Humble machine. One obscure 
-  topic carries the flag **one character per message**, and the messages 
+  Inspect and replay the bag on your ROS 2 Humble machine. One obscure
+  topic carries the flag **one character per message**, and the messages
   don't arrive in tidy order — reconstruct the sequence (by index / timestamp)
   to read it.
+
+  That channel isn't clean, either — not everything on it is real. Some of
+  it is chaff. Work out what a genuine piece of the message actually looks
+  like, and throw out anything that doesn't fit.
 
   Topics aren't latched — start listening *before* you play, or you'll miss the messages published while you were still setting up.
 
@@ -31,13 +35,18 @@ description: |
   Missed some anyway? The bag doesn't change between runs — just replay it.
 
   ---
-  Skills: `ros2 bag info/play`, `rosbag2_py` reader, ordering/reassembly.
-  Flag format: `nodezero{...}`  •  Stage 5 of 10.
+  Skills: `ros2 bag info/play`, `rosbag2_py` reader, ordering/reassembly, filtering noise.
+  Flag format: `nodezero{...}`  •  Stage 5 of 8.
 
 # ORGANIZER: PER-TEAM RANDOMIZE this one (see _templates/per-team-randomizer.py).
 # Flag spread 1 char/msg across a decoy-heavy topic; reassemble by seq/stamp.
-# Handoff: reconstructed message names a "packet capture" file for Stage 6 and
-# states the XOR key = "the tail of what you just recovered." Author flag below.
+# The secret topic itself now also carries noise (see
+# _organizer_generate_bag.py::secret_channel_payloads): out-of-range
+# "<index>:<char>" pairs plus plain non-conforming decoy strings, mixed in
+# and shuffled with the real signal. Real indices always form the
+# contiguous run [0, n) -- filter to that and you're safe. Handoff:
+# reconstructed message names the node_zero_wakeseq repo for Stage 6 and
+# states the code = "the tail of what you just recovered." Author flag below.
 flags:
   - nodezero{last_flight}
 
@@ -45,9 +54,11 @@ hints:
   - content: "Run `ros2 bag info node_zero_mission047/mission_047`. Three topics are normal telemetry (`/battery_state`, `/imu/data`, `/diagnostics`). The odd one out is `/unit_zero/subcarrier` — a `std_msgs/String` topic with far more messages than the rest. That's your channel."
     cost: 20
   - content: "Subscribe to `/unit_zero/subcarrier` BEFORE you play the bag (topics aren't latched — starting late means missing whatever already went by): `ros2 topic echo /unit_zero/subcarrier > capture.log`, then in a second terminal `ros2 bag play node_zero_mission047/mission_047`."
-    cost: 35
-  - content: "Each `data:` line looks like `<index>:<character>` — one character, tagged with its position. Parse every `data:` line, split on the FIRST colon only (the character itself could be a colon), sort by the integer index, and join in order. What comes out is the flag directly — no cipher, just reordering."
-    cost: 55
+    cost: 30
+  - content: "Not every message on that topic is real. Some are `<index>:<char>` pairs with an index way outside the range the real message could be; others don't even match that shape (plain words, no colon, or more than one trailing character). Discard anything that isn't a small integer plus exactly one character."
+    cost: 45
+  - content: "The genuine indices form one unbroken run starting at 0 — find where that run ends, keep only those, sort by index, and concatenate. What comes out is the flag directly — no cipher, just filtering and reordering."
+    cost: 65
 
 requirements:
   - "L4 // CORRUPTED LOG"
