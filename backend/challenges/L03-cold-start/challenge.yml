@@ -16,7 +16,7 @@ description: |
   scrambled line and the flag.
 
   ```
-  git clone <REPLACE-git-repo-url>/node_zero_coldstart.git
+  git clone https://github.com/Y-Sanjana/nodezero.git node_zero_coldstart
   cp -r node_zero_coldstart/coldstart_recorder ~/ros2_ws/src/
   cd ~/ros2_ws && colcon build --packages-select coldstart_recorder
   source install/setup.bash

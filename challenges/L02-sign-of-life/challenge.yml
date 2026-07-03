@@ -52,9 +52,9 @@ flags:
   - nodezero{first_sign_of_life}
 
 hints:
-  - content: "Build and run it, then in a second terminal `ros2 service list`. One service stands out: `/unit_zero/wake`. Check its type with `ros2 service type /unit_zero/wake`."
+  - content: "Build and run it, then in a second terminal `ros2 service list`. One service might stand out. Check its type with `ros2 service type'."
     cost: 15
-  - content: "Call it directly — no parameters involved: `ros2 service call /unit_zero/wake handshake_interfaces/srv/Wake \"{word: '<the codeword from Stage 1>'}\"`. The response comes back in the same terminal."
+  - content: "Call it directly — no parameters involved: `ros2 service call <service_name> <service_type>\"{word: '<the codeword from Stage 1>'}\"`. The response comes back in the same terminal."
     cost: 30
   - content: "The wake word is the animal from the ROS 2 distro codename you found in Stage 1 (Humble **Hawksbill** → `hawksbill`)."
     cost: 45
