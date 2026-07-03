@@ -1,0 +1,164 @@
+/* =========================================================================
+   NODE ZERO — CTFd reskin for the IEEE RAS robotics CTF.
+   "Unit Zero's last transmission cut off mid-cycle. Bring it back online."
+   Overlays the stock `core-beta` theme via Admin → Config → Theme →
+   "Theme Header" (wrapped in <style>) OR <link>-ed from a forked base.html.
+   Selectors are deliberately broad so the skin survives CTFd version drift.
+   ========================================================================= */
+
+:root{
+  --bg:#080d1a;     --panel:#0e1626;  --panel-2:#131f33;
+  --grid:#12203a;   --text:#cfe9ff;   --muted:#5f7d8b;
+  --accent:#35e0ff;        /* NODE ZERO cyan */
+  --accent-dim:#1c5a72;
+  --warn:#ffb454;          /* signal amber   */
+  --danger:#ff4d6a;        /* alert red      */
+  --mono:'JetBrains Mono','Fira Code',ui-monospace,'SFMono-Regular',monospace;
+}
+
+/* ---- base ------------------------------------------------------------- */
+html,body{
+  background:var(--bg)!important;
+  color:var(--text)!important;
+  font-family:var(--mono)!important;
+}
+body{
+  background-image:
+    radial-gradient(circle at 50% -10%, rgba(53,224,255,.07), transparent 60%),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px)!important;
+  background-size:auto, 40px 40px, 40px 40px!important;
+}
+/* faint CRT scanlines over everything */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,
+    rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+  mix-blend-mode:multiply;
+}
+a{color:var(--accent);}
+a:hover{color:#8af0ff;text-shadow:0 0 8px rgba(53,224,255,.45);}
+h1,h2,h3,h4,.h1,.h2,.h3{font-family:var(--mono);letter-spacing:1px;}
+hr{border-color:var(--accent-dim);}
+
+/* ---- navbar ----------------------------------------------------------- */
+.navbar,.navbar-dark,nav.navbar{
+  background:#060a14!important;
+  border-bottom:1px solid var(--accent-dim)!important;
+  backdrop-filter:blur(2px);
+}
+.navbar-brand{
+  font-weight:700;letter-spacing:2px;
+  color:var(--accent)!important;text-shadow:0 0 10px var(--accent);
+}
+.navbar .nav-link{color:var(--muted)!important;}
+.navbar .nav-link:hover,.navbar .nav-link.active{color:var(--accent)!important;}
+
+/* ---- panels / cards --------------------------------------------------- */
+.card,.modal-content,.jumbotron,.bg-light{
+  background:var(--panel)!important;
+  color:var(--text)!important;
+  border:1px solid var(--accent-dim)!important;
+  border-radius:6px!important;
+}
+.modal-header,.modal-footer{border-color:var(--accent-dim)!important;}
+
+/* ---- buttons ---------------------------------------------------------- */
+.btn-primary,.btn-success{
+  background:var(--accent)!important;border:none!important;
+  color:#04121a!important;font-weight:700!important;letter-spacing:1px;
+}
+.btn-primary:hover,.btn-success:hover{
+  background:#7fecff!important;box-shadow:0 0 16px rgba(53,224,255,.5);
+}
+.btn-secondary,.btn-outline-secondary{
+  background:transparent!important;color:var(--text)!important;
+  border:1px solid var(--accent-dim)!important;
+}
+.btn-danger{background:var(--danger)!important;border:none!important;}
+
+/* ---- forms / inputs --------------------------------------------------- */
+.form-control,input,textarea,select{
+  background:#0a111e!important;color:var(--text)!important;
+  border:1px solid var(--accent-dim)!important;border-radius:4px!important;
+  font-family:var(--mono)!important;
+}
+.form-control:focus{
+  border-color:var(--accent)!important;
+  box-shadow:0 0 0 2px rgba(53,224,255,.2)!important;
+}
+::placeholder{color:var(--muted)!important;opacity:.8;}
+
+/* ---- challenge tiles (board) ----------------------------------------- */
+/* core-beta renders challenge buttons; cover several class names so the
+   skin holds across versions */
+.challenge-button,.challenge,button.challenge-button,.challenges-board .card{
+  background:var(--panel)!important;
+  border:1px solid var(--accent-dim)!important;
+  color:var(--text)!important;border-radius:6px!important;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.challenge-button:hover,.challenge:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 16px rgba(53,224,255,.35)!important;
+}
+.solved-challenge,.challenge-solved{
+  border-color:var(--accent)!important;
+  box-shadow:inset 0 0 14px rgba(53,224,255,.18)!important;
+}
+/* locked stages (prerequisite not met) */
+.challenge-locked,.locked,[disabled].challenge-button{
+  opacity:.4!important;filter:grayscale(.6)!important;cursor:not-allowed!important;
+}
+/* category headings on the board */
+.challenges-board h3,.category-header{
+  color:var(--warn)!important;letter-spacing:2px;text-transform:uppercase;
+}
+
+/* ---- tables / scoreboard --------------------------------------------- */
+table,.table{color:var(--text)!important;}
+.table thead th{
+  color:var(--warn)!important;border-bottom:1px solid var(--accent-dim)!important;
+  letter-spacing:1px;
+}
+.table td,.table th{border-color:#122033!important;}
+.table tbody tr:hover{background:rgba(53,224,255,.05)!important;}
+/* first place = winner of the kit */
+.table tbody tr:first-child td{color:var(--accent)!important;font-weight:700;}
+
+/* ---- alerts / flash --------------------------------------------------- */
+.alert-success{background:rgba(53,224,255,.12)!important;border:1px solid var(--accent)!important;color:var(--accent)!important;}
+.alert-danger {background:rgba(255,77,106,.12)!important;border:1px solid var(--danger)!important;color:var(--danger)!important;}
+
+/* ---- landing hero (used by home-page.html) ---------------------------- */
+.nz-hero{max-width:880px;margin:8vh auto;text-align:center;padding:0 20px;}
+.nz-glyph{
+  color:var(--accent);text-shadow:0 0 12px rgba(53,224,255,.4);
+  font-size:13px;line-height:1.4;margin-bottom:18px;white-space:pre;
+}
+.nz-hero h1{
+  font-size:clamp(28px,6vw,56px);font-weight:800;letter-spacing:3px;
+  color:var(--text);margin:.2em 0;position:relative;
+}
+.nz-hero p.lead{color:var(--muted);max-width:640px;margin:18px auto 28px;line-height:1.7;}
+.nz-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.nz-status{
+  display:inline-block;margin-bottom:18px;padding:4px 12px;border-radius:3px;
+  border:1px solid var(--warn);color:var(--warn);
+  font-size:12px;letter-spacing:2px;animation:pulse 1.6s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ---- glitch text effect ---------------------------------------------- */
+.glitch{position:relative;}
+.glitch::before,.glitch::after{
+  content:attr(data-text);position:absolute;left:0;top:0;width:100%;overflow:hidden;
+}
+.glitch::before{color:var(--accent);transform:translateX(-2px);clip-path:inset(0 0 55% 0);opacity:.7;animation:gl1 2.6s infinite linear alternate;}
+.glitch::after {color:var(--warn);  transform:translateX(2px); clip-path:inset(55% 0 0 0);opacity:.7;animation:gl2 2.2s infinite linear alternate;}
+@keyframes gl1{0%{transform:translate(-2px,0)}50%{transform:translate(2px,-1px)}100%{transform:translate(-1px,1px)}}
+@keyframes gl2{0%{transform:translate(2px,0)}50%{transform:translate(-2px,1px)}100%{transform:translate(1px,-1px)}}
+
+/* blinking cursor for terminal prompts */
+.cursor::after{content:"_";color:var(--accent);animation:blink 1s steps(1) infinite;}
+@keyframes blink{50%{opacity:0}}

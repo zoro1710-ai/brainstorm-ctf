@@ -1,0 +1,39 @@
+name: "L7 // QUIET SPACES"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 7"
+value: 700
+type: standard
+state: visible
+
+attachments:
+  - archive_notes.log
+
+description: |
+  > "Mind the quiet spaces between the words."
+  >
+  > The archived log reads like ordinary prose. Every sentence is plain, boring,
+  > and true. And yet the message is right there — in what you *can't* see.
+
+  Unit Zero hid its instructions not in the words, but in the whitespace at the
+  ends of the lines. Look at the log the way a machine does. Decode the pattern.
+
+  [⬇ Download archive_notes.log] (attach via Admin → Challenge → Files)
+
+  ---
+  Skills: whitespace steganography, `cat -A` / hexdump, binary → text.
+  Flag format: `nodezero{...}`  •  Stage 7 of 10.
+
+# ORGANIZER: trailing spaces/tabs on each line encode bits (space=0, tab=1).
+# Decoded bits give the flag AND literally spell the service name + numeric code
+# that Stage 8 requires to call its service. Author the real flag below.
+flags:
+  - nodezero{quiet_spaces_read}
+
+hints:
+  - content: "The visible text says nothing useful — stop reading it for meaning. Reveal the invisible characters instead: `cat -A archive_notes.log` shows trailing spaces and tabs."
+    cost: 35
+  - content: "Each line ends in either a space or a tab. Read space=0, tab=1, one bit per line, then group into bytes -> ASCII. It spells a service name and a code you'll need next stage."
+    cost: 70
+
+requirements:
+  - "L6 // UPLINK DUMP"

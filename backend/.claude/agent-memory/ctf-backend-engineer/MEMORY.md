@@ -1,0 +1,6 @@
+- [Backend architecture and stack](backend-architecture.md) — Node/Express/node:sqlite/SSE, file map, how to run/reset
+- [Schema and race-safety design](schema-and-race-safety.md) — tables, single-winner guarantee, flag hashing
+- [Anti-cheat heuristics implemented](anticheat-heuristics.md) — the 6 checks, thresholds, where they live
+- [is_champion vs is_winner bug fix](champion-field-fix.md) — real bug found+fixed 2026-07-02, don't reintroduce
+- [End-to-end verification log](verification-2026-07-02.md) — what was tested and confirmed working this session
+- [CTFd vs custom backend decision](ctfd-vs-custom-backend.md) — why backend/ exists alongside docker-compose.yml

@@ -1,0 +1,44 @@
+name: "L8 // WAKE SEQUENCE"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 8"
+value: 800
+type: standard
+state: visible
+
+description: |
+  > You have the service name and the code. Now you need Unit Zero actually
+  > *listening* to receive them — and right now its wake sequence is broken.
+
+  Clone the wake-sequence workspace. Its launch is misconfigured (bad remaps,
+  wrong param defaults) so the service never comes up. Fix it, bring the node
+  online, then call the now-reachable service with the code from Stage 7. The
+  response carries the flag and points at Unit Zero's final diagnostic.
+
+  ```
+  git clone <REPLACE-git-repo-url>/node_zero_wakeseq.git
+  cp -r node_zero_wakeseq/wake_sequence ~/ros2_ws/src/
+  cd ~/ros2_ws && colcon build --packages-select wake_sequence
+  source install/setup.bash
+  ros2 launch wake_sequence wake.launch.py
+  # once healthy:
+  ros2 service call <service-from-stage-7> <type> "{code: <code-from-stage-7>}"
+  ```
+
+  ---
+  Skills: launch files, remaps, params, `ros2 service call` — multi-step debug.
+  Flag format: `nodezero{...}`  •  Stage 8 of 10.
+
+# ORGANIZER: absorbs old-draft "Rogue Publisher / QoS Mismatch / Agent Down"
+# ideas. Broken launch (remaps + param defaults). Service response references
+# diagnostic_beep.wav for Stage 9. Author the real flag below.
+flags:
+  - nodezero{wake_sequence_online}
+
+hints:
+  - content: "`ros2 launch` starts it but the service never appears in `ros2 service list`. Compare the launch file's remaps and default params against what the node actually expects."
+    cost: 40
+  - content: "Once the service is listed, call it with the exact code Stage 7 gave you. Read the full response — it names an audio file you'll need next."
+    cost: 80
+
+requirements:
+  - "L7 // QUIET SPACES"

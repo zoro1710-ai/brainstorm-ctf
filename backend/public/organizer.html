@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NODE ZERO // organizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="nodezero-portal.css">
+</head>
+<body>
+
+  <div class="nz-nav">
+    <span class="nz-brand">NODE//ZERO<small>organizer observability</small></span>
+    <span class="nz-links">
+      <span class="nz-badge live" id="connState"><span class="nz-dot off" id="connDot"></span>connecting…</span>
+    </span>
+  </div>
+
+  <div class="nz-wrap">
+
+    <div class="nz-banner">
+      <span><span class="nz-dot"></span>Append-only audit surface. Every submission, solve and alert below is immutable and pushed live over SSE.</span>
+      <span class="kit">★ KIT winner is the single team flagged CHAMPION</span>
+    </div>
+
+    <!-- live stat cards -->
+    <div class="nz-stats" id="statCards">
+      <div class="nz-stat"><div class="n" id="stTeams">—</div><div class="l">crews</div></div>
+      <div class="nz-stat"><div class="n" id="stSolves">—</div><div class="l">stages cleared</div></div>
+      <div class="nz-stat"><div class="n warn" id="stSubs">—</div><div class="l">submissions logged</div></div>
+      <div class="nz-stat"><div class="n danger" id="stAlerts">—</div><div class="l">anti-cheat alerts</div></div>
+    </div>
+
+    <p class="nz-label">challenge board — per-stage solves, first blood &amp; puzzle files</p>
+    <div class="nz-panel nz-scroll" style="padding:6px 0;">
+      <table class="nz-table" id="stagesTable"><thead><tr>
+        <th>#</th><th>Stage</th><th>Pts</th><th>Solves</th><th>First blood</th><th>Flag</th><th>Files</th>
+      </tr></thead><tbody id="stagesBody"></tbody></table>
+    </div>
+
+    <p class="nz-label">race standings / crew progress</p>
+    <div class="nz-panel nz-scroll" style="padding:6px 0;">
+      <table class="nz-table" id="teamsTable"><thead><tr>
+        <th>#</th><th>Crew</th><th>Stages</th><th>Score</th><th>Last solve</th><th>Misses</th><th>Status</th>
+      </tr></thead><tbody id="teamsBody"></tbody></table>
+    </div>
+
+    <p class="nz-label">anti-cheat alerts — append-only, evidence attached</p>
+    <div class="nz-panel nz-scroll" style="padding:6px 0;">
+      <table class="nz-table" id="alertsTable"><thead><tr>
+        <th>ID</th><th>Severity</th><th>Type</th><th>Stage</th><th>Teams</th><th>When</th><th>Evidence</th>
+      </tr></thead><tbody id="alertsBody"></tbody></table>
+    </div>
+
+    <p class="nz-label">activity feed — submissions + solves + alerts, newest first</p>
+    <div class="nz-panel nz-scroll" style="padding:6px 0;">
+      <table class="nz-table" id="activityTable"><thead><tr>
+        <th>Kind</th><th>Team</th><th>Stage</th><th>Result</th><th>When</th><th>IP</th>
+      </tr></thead><tbody id="activityBody"></tbody></table>
+    </div>
+
+  </div>
+
+<script>
+  var KEY = new URLSearchParams(location.search).get('key') || '';
+  var subCount = 0;
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+  function t(iso){ return iso ? new Date(iso).toLocaleTimeString() : '—'; }
+
+  function api(path) {
+    var sep = path.indexOf('?') >= 0 ? '&' : '?';
+    return fetch('/api/organizer' + path + sep + 'key=' + encodeURIComponent(KEY), {
+      headers: { 'X-Organizer-Key': KEY }
+    }).then(function (r) { return r.json(); });
+  }
+
+  function withKey(url){ return url + (url.indexOf('?')>=0?'&':'?') + 'key=' + encodeURIComponent(KEY); }
+
+  function renderStages() {
+    return api('/stages').then(function (res) {
+      var stages = res.stages || [];
+      document.getElementById('stagesBody').innerHTML = stages.map(function (s) {
+        var fb = s.first_blood
+          ? esc(s.first_blood.team_code) + ' <span class="mini">' + t(new Date(s.first_blood.at_ms).toISOString()) + '</span>'
+          : '<span class="mini">—</span>';
+        var flag = s.is_placeholder
+          ? '<span class="sev HIGH">PLACEHOLDER</span>'
+          : '<span class="res-ok">✓ real</span>';
+        var files = (s.attachments || []).length
+          ? s.attachments.map(function (f) { return '<a class="nz-dl sm" href="' + withKey(f.url) + '" download>⬇ ' + esc(f.name) + '</a>'; }).join(' ')
+          : '<span class="mini">—</span>';
+        var solvePct = s.team_count ? Math.round(s.solves / s.team_count * 100) : 0;
+        return '<tr>' +
+          '<td>' + String(s.stage_number).padStart(2, '0') + '</td>' +
+          '<td>' + esc(s.title) + '</td>' +
+          '<td class="mini">' + s.points + '</td>' +
+          '<td><b>' + s.solves + '</b> <span class="mini">/ ' + s.team_count + ' · ' + solvePct + '%</span></td>' +
+          '<td>' + fb + '</td>' +
+          '<td>' + flag + '</td>' +
+          '<td>' + files + '</td></tr>';
+      }).join('') || '<tr><td colspan="7" class="nz-empty">no stages loaded</td></tr>';
+    });
+  }
+
+  function renderTeams() {
+    return api('/teams').then(function (res) {
+      var teams = res.teams || [];
+      var cleared = teams.reduce(function (a, x) { return a + (x.stages_cleared || 0); }, 0);
+      document.getElementById('stTeams').textContent = teams.length;
+      document.getElementById('stSolves').textContent = cleared;
+      document.getElementById('teamsBody').innerHTML = teams.map(function (tm) {
+        // Status/KIT badge keys off is_champion (the one real winner), NOT is_winner.
+        var status = tm.is_champion
+          ? '<span class="kit-badge">★ KIT WINNER</span>'
+          : (tm.is_winner ? '<span class="fin-badge">finished</span>' : '<span class="mini">racing</span>');
+        return '<tr class="' + (tm.is_champion ? 'champion' : '') + '">' +
+          '<td>' + tm.rank + '</td>' +
+          '<td>' + esc(tm.team_code) + ' · ' + esc(tm.team_name) + '</td>' +
+          '<td>' + tm.stages_cleared + '</td>' +
+          '<td>' + tm.score + '</td>' +
+          '<td>' + t(tm.last_solve_at) + '</td>' +
+          '<td class="mini">' + (tm.incorrect_submissions || 0) + '</td>' +
+          '<td>' + status + '</td></tr>';
+      }).join('') || '<tr><td colspan="7" class="nz-empty">no crews yet</td></tr>';
+    });
+  }
+
+  function renderAlerts() {
+    return api('/alerts').then(function (res) {
+      var alerts = res.alerts || [];
+      document.getElementById('stAlerts').textContent = alerts.length;
+      document.getElementById('alertsBody').innerHTML = alerts.map(function (a) {
+        return '<tr class="sev-' + a.severity + '"><td>' + a.id + '</td>' +
+          '<td><span class="sev ' + a.severity + '">' + a.severity + '</span></td>' +
+          '<td>' + esc(a.alert_type) + '</td>' +
+          '<td>' + (a.stage_number || '—') + '</td>' +
+          '<td>' + esc((a.team_ids || []).join(', ')) + '</td>' +
+          '<td>' + t(a.created_at) + '</td>' +
+          '<td><code>' + esc(JSON.stringify(a.evidence)) + '</code></td></tr>';
+      }).join('') || '<tr><td colspan="7" class="nz-empty">✓ no anti-cheat alerts — clean run so far</td></tr>';
+    });
+  }
+
+  function renderActivity() {
+    return api('/activity').then(function (res) {
+      var acts = res.activity || [];
+      subCount = acts.filter(function (e) { return e.kind === 'submission'; }).length;
+      // '+' means the feed is truncated (older events dropped), so subCount is a lower
+      // bound. /activity caps at 200 combined events, so only flag it at that cap.
+      document.getElementById('stSubs').textContent = subCount + (acts.length >= 200 ? '+' : '');
+      document.getElementById('activityBody').innerHTML = acts.map(function (e) {
+        if (e.kind === 'submission') {
+          var result = e.rejection_reason
+            ? '<span class="mini">' + esc(e.rejection_reason) + '</span>'
+            : (e.is_correct ? '<span class="res-ok">✓ correct</span>' : '<span class="res-no">✗ incorrect</span>');
+          return '<tr><td>submission</td><td>' + esc(e.team_code) + '</td><td>' + e.stage_number +
+            '</td><td>' + result + '</td><td>' + t(e.at) + '</td><td class="mini">' + esc(e.ip || '') + '</td></tr>';
+        }
+        return '<tr class="sev-' + e.severity + '"><td><span class="sev ' + e.severity + '">ALERT</span></td>' +
+          '<td>' + esc((e.team_ids || []).join(', ')) + '</td><td>' + (e.stage_number || '—') +
+          '</td><td>' + esc(e.alert_type) + '</td><td>' + t(e.at) + '</td><td></td></tr>';
+      }).join('') || '<tr><td colspan="6" class="nz-empty">no activity yet</td></tr>';
+    });
+  }
+
+  function refreshAll() { renderStages(); renderTeams(); renderAlerts(); renderActivity(); }
+
+  if (!KEY) {
+    document.getElementById('connState').innerHTML = '<span class="nz-dot off"></span>no organizer key in URL';
+  } else {
+    var es = new EventSource('/api/organizer/stream?key=' + encodeURIComponent(KEY));
+    es.onopen = function () {
+      document.getElementById('connState').innerHTML = '<span class="nz-dot"></span>connected · live';
+    };
+    es.onerror = function () {
+      document.getElementById('connState').innerHTML = '<span class="nz-dot off"></span>reconnecting…';
+    };
+    es.addEventListener('submission', refreshAll);
+    es.addEventListener('solve', refreshAll);
+    es.addEventListener('anticheat_alert', refreshAll);
+
+    refreshAll();
+    setInterval(refreshAll, 15000);
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+name: "L2 // SIGN OF LIFE"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 2"
+value: 200
+type: standard
+state: visible
+
+description: |
+  > You recovered Unit Zero's **wake word** in Stage 1. Now connect to the bot
+  > for the first time and speak it.
+
+  Clone the handshake workspace onto your **Ubuntu 22.04 + ROS 2 Humble** machine
+  and run it. The unit boots **DORMANT** — it won't respond until it hears the
+  correct wake word. Discover its interface with the ROS 2 command-line tools,
+  feed it the word from Stage 1, and it comes online with the flag and a pointer
+  to what comes next.
+
+  ```
+  git clone <REPLACE-git-repo-url>/node_zero_handshake.git
+  cp -r node_zero_handshake/handshake ~/ros2_ws/src/
+  cd ~/ros2_ws && colcon build --packages-select handshake
+  source install/setup.bash
+  ros2 run handshake handshake_node
+  ```
+
+  ---
+  Skills: `ros2 run`, `ros2 topic list` / `echo`, `ros2 param list` / `set`.
+  Flag format: `nodezero{...}`
+
+# ORGANIZER — host node_zero_handshake as a clonable git repo (source is in this
+# folder). This is the FIRST hands-on ROS 2 stage and builds CLEANLY on purpose
+# (the broken build is Stage 3).
+#
+# SOLUTION
+#   1. clone -> colcon build --packages-select handshake -> source -> ros2 run
+#   2. `ros2 topic echo /unit_zero/status` shows "DORMANT :: awaiting wake word."
+#   3. `ros2 param list /handshake_node` reveals the `wake_word` param.
+#   4. `ros2 param set /handshake_node wake_word hawksbill`  (from Stage 1)
+#   5. `ros2 topic echo /unit_zero/response` now prints the flag + the Stage-3
+#      repo pointer. (Check is case-insensitive / whitespace-tolerant.)
+#   Wrong word -> node logs "REJECTED" and stays dormant (instant feedback).
+#
+# CHAIN: mechanically gated on the real Stage-1 answer (the codeword 'hawksbill').
+# HANDOFF: response names node_zero_coldstart.git @ tag cold-start-v1 (Stage 3).
+# PUSH-SAFE: the flag is stored base64 in handshake_node.py (_RESPONSE_B64) and
+#   only decoded at runtime, so a `grep nodezero` on the cloned repo finds nothing.
+#   Push node_zero_handshake/ as a standalone git repo for teams to clone.
+flags:
+  - nodezero{first_sign_of_life}
+
+hints:
+  - content: "Build and run it, then in a second terminal `ros2 topic echo /unit_zero/status`. It tells you plainly what the unit is waiting for."
+    cost: 15
+  - content: "The unit exposes a setting: `ros2 param list /handshake_node` shows a `wake_word` parameter. Set it with `ros2 param set /handshake_node wake_word <the codeword from Stage 1>`, then echo `/unit_zero/response`."
+    cost: 30
+  - content: "The wake word is the animal from the ROS 2 distro codename you found in Stage 1 (Humble **Hawksbill** → `hawksbill`)."
+    cost: 45
+
+requirements:
+  - "L1 // STATIC ON THE LINE"

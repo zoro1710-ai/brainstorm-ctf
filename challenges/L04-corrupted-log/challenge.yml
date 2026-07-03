@@ -1,0 +1,38 @@
+name: "L4 // CORRUPTED LOG"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 4"
+value: 400
+type: standard
+state: visible
+
+attachments:
+  - corrupted.log
+
+description: |
+  > The recovery log handed you a scrambled line. It's not damaged — it's
+  > *enciphered*. And Stage 3 already gave you the key without telling you.
+
+  Take the garbled log text and apply a classical cipher shift to it. The shift
+  isn't random: it's a number you already saw in the recorder's own package.
+  Decoded, the plaintext names the next artifact to chase.
+
+  [⬇ Download corrupted.log] (attach via Admin → Challenge → Files)
+
+  ---
+  Skills: classical ciphers (Caesar / Vigenère), spotting the key you already have.
+  Flag format: `nodezero{...}`  •  Stage 4 of 10.
+
+# ORGANIZER: Caesar (or Vigenère) over the log text; the shift = the package.xml
+# <version> from Stage 3. Decoded plaintext ends by naming the rosbag file +
+# topic for Stage 5. Author the real flag below.
+flags:
+  - nodezero{cipher_one_broken}
+
+hints:
+  - content: "This is a shift cipher. You saw a small number in Stage 3 that you didn't use yet (hint: it was on the package itself). That's the shift."
+    cost: 25
+  - content: "Apply the shift across the alphabet. `caesar`/`tr` or a 3-line Python loop will do it. The plaintext names a rosbag file and a topic — write both down."
+    cost: 50
+
+requirements:
+  - "L3 // COLD START"
