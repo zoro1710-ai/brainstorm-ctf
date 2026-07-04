@@ -6,14 +6,9 @@ type: standard
 state: visible
 
 description: |
-  > You recovered Unit Zero's **wake word** in Stage 1. Now connect to the bot
-  > for the first time and speak it.
+  > You recovered Unit Zero's **wake word** in Stage 1. Now connect to the bot for the first time and speak it.
 
-  Clone the handshake workspace onto your **Ubuntu 22.04 + ROS 2 Humble** machine
-  and run it. The unit boots **DORMANT** — it won't respond until it hears the
-  correct wake word. Discover its service with the ROS 2 command-line tools,
-  call it with the word from Stage 1, and the response carries the flag and a
-  pointer to what comes next — one call, no parameters.
+  Clone the handshake workspace onto your **Ubuntu 22.04 + ROS 2 Humble** machine and run it. The unit boots **DORMANT** — it won't respond until it hears the correct wake word. Discover its service with the ROS 2 command-line tools, call it with the word from Stage 1, and the response carries the flag and a pointer to what comes next — one call, no parameters.
 
   ```
   git clone https://github.com/Y-Sanjana/nodezero.git node_zero_handshake

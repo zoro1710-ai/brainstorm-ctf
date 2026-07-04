@@ -19,11 +19,10 @@ What it builds, inside <outdir>/mission_047/ (a normal rosbag2 sqlite3 bag):
     filter real signal (index in [0, n), exactly one trailing character)
     from chaff once you're listening to it.
 
-The hidden message is the Stage 5 flag plus the Stage 6 handoff. Change
-MESSAGE below (and FLAG in challenges/L05-mission-047/challenge.yml to match)
-if you regenerate for a live event. For TRUE per-team anti-share, adapt
-challenges/_templates/per-team-randomizer.py instead of running this as-is
-for every team.
+The hidden message is the Stage 5 flag plus the Stage 6 handoff -- one shared
+flag for every team, by design. Change MESSAGE below (and FLAG in
+challenges/L05-mission-047/challenge.yml to match) if you regenerate for a
+live event.
 
 Run:
     source /opt/ros/humble/setup.bash

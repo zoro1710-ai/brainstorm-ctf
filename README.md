@@ -25,7 +25,6 @@ ctf-website/
 │  └─ home-page.html          ← PASTE into Admin → Pages → edit the index "/" page (HTML mode)
 └─ challenges/
    ├─ README.md               ← import steps + 8-stage master table
-   ├─ _templates/per-team-randomizer.py
    ├─ L01-static-on-the-line/  … through …  L08-full-boot/
 ```
 
@@ -111,14 +110,14 @@ Each challenge description contains placeholder links — **replace before go-li
   (Cold Start, Mission 047, Wake Sequence, Full Boot). Internal Gitea or a GitHub org
   — must be clonable without Docker or a browser IDE. **No Gitpod / code-server.**
 
-Per-team randomize the finale (and Stages 5/9) with `challenges/_templates/per-team-randomizer.py`.
+Every stage uses a single shared flag for all teams (by design — no per-team randomization).
 
 ---
 
 ## Go-live checklist
 - [ ] User mode ON, registration **disabled**, 8 team accounts provisioned
 - [ ] All 8 stages present; Stages 2–8 show **🔒 locked** until prereq solved
-- [ ] Real flags set (replace `REPLACE` placeholders); finale flag randomized per team
+- [ ] Real flags set (replace `REPLACE` placeholders)
 - [ ] File attachments + git repo links live and tested from a clean Humble VM
 - [ ] Each handoff string (e.g. the wake word `hawksbill`) matches byte-for-byte across stages
 - [ ] Hints created with (time-)costs

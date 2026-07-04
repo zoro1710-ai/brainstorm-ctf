@@ -6,13 +6,9 @@ type: standard
 state: visible
 
 description: |
-  > Unit Zero's wake sequence is up — but it isn't listening where it's
-  > supposed to. Bring the workspace in, get it running, and it comes down
-  > to a single call.
+  > Unit Zero's wake sequence is up — but it isn't listening where it's supposed to. Bring the workspace in, get it running, and it comes down to a single call.
 
-  This one isn't a service this time — it's a ROS 2 **action**. Same idea as
-  Stage 2 (discover it, speak to it, get the flag back), but actions are a
-  different beast: goals, feedback, results.
+  This one isn't a service this time — it's a ROS 2 **action**. Same idea as Stage 2 (discover it, speak to it, get the flag back), but actions are a different beast: goals, feedback, results.
 
   ```
   git clone https://github.com/Y-Sanjana/nodezero.git node_zero_wakeseq
@@ -22,11 +18,9 @@ description: |
   ros2 launch wake_sequence wake.launch.py
   ```
 
-  Once it's up, find out for yourself whether it came up where you'd expect.
-  Unit Zero's records haven't exactly been reliable spellers since the crash
+  Once it's up, find out for yourself whether it came up where you'd expect. Unit Zero's records haven't exactly been reliable spellers since the crash
   — Stage 1's log had a whole word riding on one line nobody double-checked.
-  Wouldn't be the first time a name came out of a config file one character
-  short of what it should be.
+  Wouldn't be the first time a name came out of a config file one character short of what it should be.
 
   Dont forget to rebuild and relaunch to spell it properly
 

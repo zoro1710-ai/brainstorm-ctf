@@ -20,15 +20,13 @@ a point total).
 | 2 | SIGN OF LIFE | ROS 2 service call (wake word) | **git repo** | Stage 1 |
 | 3 | COLD START | Broken colcon build | **git repo** | Stage 2 |
 | 4 | CORRUPTED LOG | Cipher I (Caesar + Morse-coded key) | `corrupted.log` (Files) | Stage 3 |
-| 5 | MISSION 047 | Rosbag forensics (with noise-filtering) | **git repo** (per-team) | Stage 4 |
+| 5 | MISSION 047 | Rosbag forensics (with noise-filtering) | **git repo** | Stage 4 |
 | 6 | WAKE SEQUENCE | Broken launch + ROS 2 action call | **git repo** | Stage 5 |
 | 7 | DIAGNOSTIC BEEP | Audio / Morse timing | `diagnostic_beep.wav` (Files) | Stage 6 |
-| 8 | FULL BOOT (finale) | turtlesim square-tracing (teleop) | **git repo** (per-team flag) | Stage 7 |
+| 8 | FULL BOOT (finale) | turtlesim square-tracing (teleop) | **git repo** | Stage 7 |
 
-> All 8 stages have built, verified artifacts. Stage 8's flag is a single
-> shared value for testing — **per-team randomize Stages 5 and 8**
-> (anti-share) using `_templates/per-team-randomizer.py` before
-> go-live.
+> All 8 stages have built, verified artifacts. Every stage uses a single
+> shared flag for all teams (by design — no per-team randomization).
 
 ## The chain / clue handoffs
 
@@ -97,9 +95,3 @@ git remote add origin <your-host>/node_zero_handshake.git
 git push -u origin main
 # then paste that clone URL into the Stage 2 challenge.yml (replace <REPLACE-git-repo-url>)
 ```
-
-## Per-team randomization
-
-`_templates/per-team-randomizer.py` builds a unique `nodezero{...}` flag per team
-and an organizer-only `answer_key.csv`. Use it for Stages 5, 7, and 8. Give each
-team ONLY its own artifact.

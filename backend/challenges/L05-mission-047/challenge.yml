@@ -6,18 +6,11 @@ type: standard
 state: visible
 
 description: |
-  > The cipher named a recording: `mission_047`. Unit Zero logged its last 
-  > real mission to a rosbag before everything went quiet. The answer is 
-  > in there scattered.
+  > The cipher named a recording: `mission_047`. Unit Zero logged its last real mission to a rosbag before everything went quiet. The answer is in there scattered.
 
-  Inspect and replay the bag on your ROS 2 Humble machine. One obscure
-  topic carries the flag **one character per message**, and the messages
-  don't arrive in tidy order — reconstruct the sequence (by index / timestamp)
-  to read it.
+  Inspect and replay the bag on your ROS 2 Humble machine. One obscure topic carries the flag **one character per message**, and the messages don't arrive in tidy order — reconstruct the sequence (by index / timestamp) to read it.
 
-  That channel isn't clean, either — not everything on it is real. Some of
-  it is chaff. Work out what a genuine piece of the message actually looks
-  like, and throw out anything that doesn't fit.
+  That channel isn't clean, either — not everything on it is real. Some of it is chaff. Work out what a genuine piece of the message actually looks like, and throw out anything that doesn't fit.
 
   Topics aren't latched — start listening *before* you play, or you'll miss the messages published while you were still setting up.
 
@@ -38,8 +31,8 @@ description: |
   Skills: `ros2 bag info/play`, `rosbag2_py` reader, ordering/reassembly, filtering noise.
   Flag format: `nodezero{...}`  •  Stage 5 of 8.
 
-# ORGANIZER: PER-TEAM RANDOMIZE this one (see _templates/per-team-randomizer.py).
-# Flag spread 1 char/msg across a decoy-heavy topic; reassemble by seq/stamp.
+# ORGANIZER: single shared flag for all teams (by design). Flag spread
+# 1 char/msg across a decoy-heavy topic; reassemble by seq/stamp.
 # The secret topic itself now also carries noise (see
 # _organizer_generate_bag.py::secret_channel_payloads): out-of-range
 # "<index>:<char>" pairs plus plain non-conforming decoy strings, mixed in

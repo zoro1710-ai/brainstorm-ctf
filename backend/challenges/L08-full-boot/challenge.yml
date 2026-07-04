@@ -22,19 +22,18 @@ description: |
 
   ---
   Skills: turtlesim, teleop/Twist.
-  Flag format: `nodezero{signal_recovered_...}`  •  Stage 8 of 8 — **the kit goes to the first crew here.**
+  Flag format: `nodezero{...}`  •  Stage 8 of 8 — **the kit goes to the first crew here.**
 
-# ORGANIZER: PER-TEAM RANDOMIZE the finale flag (anti-share) before go-live --
-# right now it's one shared flag for testing. No build/launch faults -- the
-# workspace builds and launches clean. The only task is piloting: supervisor_node
-# (full_boot/full_boot/supervisor_node.py) tracks /turtle1/pose, detects corners
-# (heading change >= 60 deg after moving >= 1.5 units since the last corner),
-# and after 4 corners checks that total turning ~360 deg (+/- 70 deg) and the
-# turtle is back within 1.5 units of the position it started the shape from.
-# If 4 corners are seen but the shape doesn't close, it resets (corners=0) and
-# logs why, so a bad attempt doesn't get stuck -- just drive it again. On
-# success the flag is published directly on /unit_zero/status and logged, no
-# service/key needed. Author the real flag below.
+# ORGANIZER: single shared flag for all teams (by design). No build/launch
+# faults -- the workspace builds and launches clean. The only task is piloting:
+# supervisor_node (full_boot/full_boot/supervisor_node.py) tracks /turtle1/pose,
+# detects corners (heading change >= 60 deg after moving >= 1.5 units since the
+# last corner), and after 4 corners checks that total turning ~360 deg
+# (+/- 70 deg) and the turtle is back within 1.5 units of the position it
+# started the shape from. If 4 corners are seen but the shape doesn't close,
+# it resets (corners=0) and logs why, so a bad attempt doesn't get stuck --
+# just drive it again. On success the flag is published directly on
+# /unit_zero/status and logged, no service/key needed. Author the real flag below.
 flags:
   - nodezero{signal_recovered}
 
