@@ -51,13 +51,22 @@ function buildParticipantRouter(ctx) {
   });
 
   // Full player-facing content for one stage (description, hints, download list).
-  // Gated: a team can only read a stage it has unlocked. Never returns the flag.
+  // Gated: a team can only read a stage it has unlocked -- this stays true even
+  // after later stages are solved, so a completed stage remains reviewable.
+  // Never returns the canonical answer for an unsolved stage; if THIS team has
+  // already solved it, their own past-correct submission is echoed back (they
+  // already know it -- this just lets them revisit it without resubmitting).
   // Hints: content is hidden until explicitly unlocked via POST /stages/:n/hints/:i/unlock
   router.get('/stages/:n', requireTeamAuth(db), (req, res) => {
     const n = parseInt(req.params.n, 10);
     const content = stageContent && stageContent.get(n);
     if (!content) return res.status(404).json({ ok: false, error: 'no such stage' });
     if (!stageUnlocked(req.team.id, n)) return res.status(403).json({ ok: false, error: 'stage locked' });
+
+    const solve = db.prepare(`
+      SELECT sub.raw_flag FROM solves s JOIN submissions sub ON sub.id = s.submission_id
+      WHERE s.team_id = ? AND s.stage_number = ?
+    `).get(req.team.id, n);
 
     // Fetch which hints this team has already unlocked
     const unlockedRows = db.prepare(
@@ -79,6 +88,8 @@ function buildParticipantRouter(ctx) {
     res.json({
       ok: true,
       stage_number: n,
+      solved: !!solve,
+      submitted_flag: solve ? solve.raw_flag : null,
       description: content.description,
       hints,
       attachments: content.attachments.map((name) => ({ name, url: `/api/stages/${n}/files/${encodeURIComponent(name)}` })),
