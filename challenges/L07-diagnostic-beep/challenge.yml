@@ -1,0 +1,36 @@
+name: "L7 // DIAGNOSTIC BEEP"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 7"
+value: 700
+type: standard
+state: visible
+
+attachments:
+  - diagnostic_beep.wav
+
+description: |
+  > `diagnostic_beep.wav` — the last sound Unit Zero made before it went dark.
+  >  It isn't noise. It's a signal, and it's timed.
+
+
+  [⬇ Download diagnostic_beep.wav ]
+
+  ---
+  Skills: signal/timing analysis, Morse timing (short/long), decode to text.
+  Flag format: `nodezero{...}`  •  Stage 7 of 8.
+
+# ORGANIZER: on/off envelope = Morse timing (deliberately NOT a cipher, keeps it
+# distinct from the medium-tier cipher levels). Decoded short word = the finale
+# unlock key + pointer to the final boot repo. Single shared flag for all teams
+# (by design). Author the real flag below.
+flags:
+  - nodezero{revive}
+
+hints:
+  - content: "Open the WAV in Audacity. You'll see clear short and long pulses with gaps which's used for communication"
+    cost: 45
+  - content: "Map short=dot, long=dash, decode with a Morse table. It's one short word — that word is the finale key. It also names the last repo you'll clone."
+    cost: 90
+
+requirements:
+  - "L6 // WAKE SEQUENCE"

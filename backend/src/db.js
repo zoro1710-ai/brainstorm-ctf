@@ -193,6 +193,18 @@ function seedStages(db) {
       hashFlag(s.flag), s.isPlaceholder ? 1 : 0, s.requiresStage, s.expectedMinSeconds,
     );
   }
+
+  // Prune stages whose challenges/L0N-*/ folder no longer exists (e.g. after
+  // deleting/renumbering stages) -- otherwise old rows linger in the trail
+  // UI forever since the upsert above only ever adds/updates, never removes.
+  const currentNumbers = defs.map((s) => s.stageNumber);
+  const placeholders = currentNumbers.map(() => '?').join(',');
+  if (placeholders) {
+    db.prepare(`DELETE FROM stages WHERE stage_number NOT IN (${placeholders})`).run(...currentNumbers);
+  } else {
+    db.prepare('DELETE FROM stages').run();
+  }
+
   return defs;
 }
 

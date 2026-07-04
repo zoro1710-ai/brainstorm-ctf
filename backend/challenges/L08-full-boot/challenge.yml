@@ -1,0 +1,49 @@
+name: "L8 // FULL BOOT — SIGNAL RECOVERED (FINALE)"
+author: "IEEE RAS · NODE ZERO"
+category: "STAGE 8"
+value: 800
+type: standard
+state: visible
+
+description: |
+  > This is it. Everything you've recovered comes together here. Bring Unit Zero all the way back online.
+
+  For this last stretch, Unit Zero's body is a **turtlesim** turtle.
+
+  ```
+  git clone https://github.com/Y-Sanjana/nodezero.git node_zero_fullboot
+  cp -r node_zero_fullboot/full_boot ~/ros2_ws/src/
+  cd ~/ros2_ws && colcon build --packages-select full_boot
+  source install/setup.bash
+  ros2 launch full_boot boot.launch.py
+  ```
+
+  Pilot the turtle through a **square** — four straight legs, four turns, back close to where you started. Standard ROS 2 teleop (`/turtle1/cmd_vel`). Close the loop and Unit Zero fully wakes on its own, printing the last flag. First team to submit it wins the kit.
+
+  ---
+  Skills: turtlesim, teleop/Twist.
+  Flag format: `nodezero{...}`  •  Stage 8 of 8 — **the kit goes to the first crew here.**
+
+# ORGANIZER: single shared flag for all teams (by design). No build/launch
+# faults -- the workspace builds and launches clean. The only task is piloting:
+# supervisor_node (full_boot/full_boot/supervisor_node.py) tracks /turtle1/pose,
+# detects corners (heading change >= 60 deg after moving >= 1.5 units since the
+# last corner), and after 4 corners checks that total turning ~360 deg
+# (+/- 70 deg) and the turtle is back within 1.5 units of the position it
+# started the shape from. If 4 corners are seen but the shape doesn't close,
+# it resets (corners=0) and logs why, so a bad attempt doesn't get stuck --
+# just drive it again. On success the flag is published directly on
+# /unit_zero/status and logged, no service/key needed. Author the real flag below.
+flags:
+  - nodezero{signal_recovered}
+
+hints:
+  - content: "Watch `/unit_zero/status` while you drive — it reports corners detected so far and total turning. A corner only counts once you've moved a bit AND turned a fair amount, so tiny steering wobble won't trigger it, but spinning in place without moving won't either."
+    cost: 50
+  - content: "You need 4 turns that add up to roughly a full 360-degree loop, ending back close to where you started the shape (not necessarily the exact turtlesim spawn point — wherever you were when your first real turn happened)."
+    cost: 90
+  - content: "`ros2 run turtlesim turtle_teleop_key` is the easiest way to drive precisely: four legs of roughly equal length, turning about 90 degrees at each corner. If it logs '4 corners seen but shape not closed', it resets on its own — just go again, no need to relaunch."
+    cost: 130
+
+requirements:
+  - "L7 // DIAGNOSTIC BEEP"

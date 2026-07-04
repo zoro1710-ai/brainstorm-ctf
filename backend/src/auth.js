@@ -8,6 +8,11 @@ function login(db, { code, password, ip, userAgent }) {
   if (!team) return null;
   if (!verifyPassword(password, team.password_salt, team.password_hash)) return null;
 
+  // Only one active session per team -- a fresh login invalidates any other
+  // device/tab already logged in as this team (anti-share: a shared team
+  // code/password can't be used by two people at once).
+  db.prepare('DELETE FROM sessions WHERE team_id = ?').run(team.id);
+
   const token = randomToken(32);
   db.prepare(`
     INSERT INTO sessions (token, team_id, created_at, last_seen_at, ip, user_agent)

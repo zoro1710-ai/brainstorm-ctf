@@ -10,28 +10,31 @@ attachments:
 
 description: |
   > The recovery log handed you a scrambled line. It's not damaged — it's
-  > *enciphered*. And Stage 3 already gave you the key without telling you.
+  > *enciphered*.
 
-  Take the garbled log text and apply a classical cipher shift to it. The shift
-  isn't random: it's a number you already saw in the recorder's own package.
-  Decoded, the plaintext names the next artifact to chase.
+  The machine speaks in a broken tongue. Its thoughts have been rotated through the ancient wheel of Caesar. Re-align to unveil the truth.
+  Dashes and dots hold the weight of the rotation. 
+  Decode the signal.
+  > **--...**
 
-  [⬇ Download corrupted.log] (attach via Admin → Challenge → Files)
 
   ---
-  Skills: classical ciphers (Caesar / Vigenère), spotting the key you already have.
   Flag format: `nodezero{...}`  •  Stage 4 of 10.
 
-# ORGANIZER: Caesar (or Vigenère) over the log text; the shift = the package.xml
-# <version> from Stage 3. Decoded plaintext ends by naming the rosbag file +
-# topic for Stage 5. Author the real flag below.
+# ORGANIZER: Caesar over the log text; shift = 7, given in the description as
+# Morse code (--...) instead of requiring recall from Stage 3's package.xml
+# version. Decoded plaintext ends by naming the mission_047 rosbag for Stage 5
+# (deliberately does not name the topic -- that's Stage 5's own puzzle).
+# NOTE: Stage 3's recovery log still tells players the shift equals its own
+# package version (7) as a HANDOFF -- that's now a redundant/confirming path,
+# not the only one. Leave as-is unless you want that line reworded too.
 flags:
   - nodezero{cipher_one_broken}
 
 hints:
-  - content: "This is a shift cipher. You saw a small number in Stage 3 that you didn't use yet (hint: it was on the package itself). That's the shift."
+  - content: "The bolded line in the description isn't decoration — it's Morse code. Decode the dots and dashes to a single digit first."
     cost: 25
-  - content: "Apply the shift across the alphabet. `caesar`/`tr` or a 3-line Python loop will do it. The plaintext names a rosbag file and a topic — write both down."
+  - content: "That digit is your Caesar shift. Apply it across the alphabet with `caesar`/`tr` or a 3-line Python loop. The plaintext names a rosbag file — write it down."
     cost: 50
 
 requirements:

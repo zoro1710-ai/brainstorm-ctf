@@ -3,7 +3,6 @@
 // non-blocking (submissions are never silently dropped -- alerts are additive).
 // Tunable windows/thresholds are constants below; tune after a dry run.
 
-const SAME_FLAG_WINDOW_MS = 3 * 60 * 1000;      // same correct flag, different teams
 const SHARED_IP_WINDOW_MS = 30 * 60 * 1000;     // same IP, different teams
 const SAME_WRONG_GUESS_WINDOW_MS = 5 * 60 * 1000;
 const BRUTE_FORCE_WINDOW_MS = 5 * 60 * 1000;
@@ -63,33 +62,6 @@ function checkPrematureCorrectSubmission(db, hub, submission) {
       server_ts: submission.server_ts,
       ip: submission.ip,
       reason: 'Submitted flag matches the correct flag for a stage this team has not unlocked (previous stage not solved). Likely leaked/shared flag or out-of-order access.',
-    },
-  });
-}
-
-/** Same correct flag (i.e. same stage solved) by 2+ distinct teams within a short window. */
-function checkSameFlagMultipleTeams(db, hub, solve) {
-  const others = db.prepare(`
-    SELECT s.team_id, s.solved_at, s.solved_at_ms, t.code AS team_code
-    FROM solves s JOIN teams t ON t.id = s.team_id
-    WHERE s.stage_number = ? AND s.team_id != ? AND ABS(s.solved_at_ms - ?) <= ?
-  `).all(solve.stage_number, solve.team_id, solve.solved_at_ms, SAME_FLAG_WINDOW_MS);
-
-  if (others.length === 0) return;
-
-  const teamIds = [solve.team_id, ...others.map((o) => o.team_id)];
-  insertAlert(db, hub, {
-    type: 'same_flag_multiple_teams',
-    severity: 'HIGH',
-    stageNumber: solve.stage_number,
-    teamIds,
-    evidence: {
-      stage_number: solve.stage_number,
-      this_team_id: solve.team_id,
-      this_solved_at: solve.solved_at,
-      other_teams: others.map((o) => ({ team_id: o.team_id, team_code: o.team_code, solved_at: o.solved_at })),
-      window_ms: SAME_FLAG_WINDOW_MS,
-      reason: `Stage ${solve.stage_number}'s flag was solved by ${teamIds.length} distinct teams within ${SAME_FLAG_WINDOW_MS / 1000}s of each other.`,
     },
   });
 }
@@ -202,7 +174,6 @@ function checkBruteForce(db, hub, submission) {
 
 module.exports = {
   checkPrematureCorrectSubmission,
-  checkSameFlagMultipleTeams,
   checkAbnormallyFastSolve,
   checkSharedIp,
   checkSameWrongGuessAcrossTeams,

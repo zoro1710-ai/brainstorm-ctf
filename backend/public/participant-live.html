@@ -56,7 +56,7 @@
         <div class="nz-status">&#9677; SIGNAL LOST — LAST TRANSMISSION CUT MID-CYCLE</div>
         <h1 class="glitch" data-text="NODE ZERO">NODE ZERO</h1>
         <p class="nz-lead">
-          Ten stages. One continuous trail. Solve one to reveal the next.
+          Eight stages. One continuous trail. Solve one to reveal the next.
           <b>The first crew to recover the full signal wins the kit — and revives the bot.</b>
         </p>
       </div>
@@ -82,12 +82,12 @@
     <section id="view-board" class="hidden">
       <div class="nz-banner">
         <span><span class="nz-dot"></span>LIVE — flags checked server-side, the race updates in real time.</span>
-        <span class="kit">★ FIRST CREW TO CLEAR ALL 10 WINS THE HARDWARE KIT</span>
+        <span class="kit">★ FIRST CREW TO CLEAR ALL 8 WINS THE HARDWARE KIT</span>
       </div>
 
       <p class="nz-label">the trail — recover the signal</p>
       <div class="nz-progress-wrap">
-        <span class="nz-progress-txt"><b id="stagecount">0</b> / <span id="stagetotal">10</span> stages recovered</span>
+        <span class="nz-progress-txt"><b id="stagecount">0</b> / <span id="stagetotal">8</span> stages recovered</span>
         <span class="nz-progress"><i id="progFill" style="width:0%"></i></span>
       </div>
 
@@ -118,12 +118,13 @@
       <div class="nz-panel" style="max-width:640px;">
         <p class="nz-stage-head" id="stageHeader">STAGE</p>
         <p id="stageBody" style="color:var(--muted);line-height:1.7;font-size:13.5px;"></p>
-        <form class="nz-flag-row" onsubmit="return submitFlag()">
+        <form class="nz-flag-row" id="flagForm" onsubmit="return submitFlag()">
           <span class="prompt">flag&gt;</span>
           <input id="flagin" class="nz-input" placeholder="nodezero{...}" autocomplete="off">
           <button class="nz-btn" type="submit">SUBMIT</button>
         </form>
         <p id="result" class="nz-result"></p>
+        <p id="solvedFlag" class="nz-result ok hidden"></p>
       </div>
     </section>
 
@@ -132,7 +133,7 @@
       <p class="nz-back" onclick="showBoard()">&#9664; back to the trail</p>
       <p class="nz-label">race status — completion order (live)</p>
       <div class="nz-banner">
-        <span class="kit">★ Ranking is by <b style="color:var(--warn)">who finishes first</b>, not points. First to Stage 10 takes the kit.</span>
+        <span class="kit">★ Ranking is by <b style="color:var(--warn)">who finishes first</b>, not points. First to Stage 8 takes the kit.</span>
       </div>
       <div class="nz-panel" style="padding:6px 0;">
         <table class="nz-table">
@@ -275,8 +276,24 @@
     opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
     if (TOKEN) opts.headers['Authorization'] = 'Bearer ' + TOKEN;
     return fetch('/api' + path, opts).then(function (r) {
-      return r.json().then(function (b) { return { status: r.status, body: b }; });
+      return r.json().then(function (b) {
+        if (r.status === 401 && TOKEN && path !== '/login') { forceLoggedOut(); }
+        return { status: r.status, body: b };
+      });
     });
+  }
+
+  // Server invalidated our session -- most likely this team logged in from
+  // another device/tab (only one active session per team is allowed).
+  function forceLoggedOut() {
+    localStorage.removeItem('nz_token'); localStorage.removeItem('nz_team');
+    TOKEN = null; TEAM = null;
+    if (es) { es.close(); es = null; }
+    document.getElementById('logoutBtn').classList.add('hidden');
+    document.getElementById('whoami').textContent = '';
+    show('login');
+    var msg = document.getElementById('loginMsg');
+    if (msg) { msg.className = 'nz-result no'; msg.textContent = 'Logged out — this team logged in from another device.'; }
   }
 
   function doLogin() {
@@ -335,27 +352,24 @@
   }
 
   function renderBoard() {
-    var total = STAGES.length || 10;
+    var total = STAGES.length || 8;
     var solved = STAGES.filter(function (s) { return s.solved; }).length;
     document.getElementById('stagecount').textContent = solved;
     document.getElementById('stagetotal').textContent = total;
     document.getElementById('progFill').style.width = (total ? (solved / total * 100) : 0) + '%';
 
     document.getElementById('boardTiles').innerHTML = STAGES.map(function (s) {
-      var open = s.unlocked && !s.solved;
       var cls = 'nz-tile ' + (s.solved ? 'solved' : (s.unlocked ? 'open' : 'locked'));
       if (s.stage_number === total) cls += ' finale';
       var state = s.solved ? '&#10003; SIGNAL RECOVERED'
                 : (s.unlocked ? '&#9654; OPEN — submit flag'
                 : '&#128274; locked · clear stage ' + (s.stage_number - 1));
-      var diff = diffOf(s.stage_number);
-      var click = open ? ' onclick="openStage(' + s.stage_number + ')"' : '';
+      var click = s.unlocked ? ' onclick="openStage(' + s.stage_number + ')"' : '';
       return '<div class="' + cls + '"' + click + '>' +
         '<span class="pts">' + s.points + '</span>' +
         '<div class="num">STAGE ' + String(s.stage_number).padStart(2, '0') + '</div>' +
         '<div class="title">' + esc(cleanTitle(s.title)) + '</div>' +
-        '<div class="foot"><span class="state">' + state + '</span>' +
-        '<span class="diff ' + diff + '">' + diff + '</span></div>' +
+        '<div class="foot"><span class="state">' + state + '</span></div>' +
       '</div>';
     }).join('');
   }
@@ -394,16 +408,28 @@
     var s = STAGES.find(function (x) { return x.stage_number === n; });
     if (!s) return;
     document.getElementById('stageHeader').textContent =
-      'STAGE ' + String(n).padStart(2, '0') + ' // ' + cleanTitle(s.title) + '  ·  ' + s.points + ' pts  ·  ' + diffOf(n).toUpperCase();
+      'STAGE ' + String(n).padStart(2, '0') + ' // ' + cleanTitle(s.title) + '  ·  ' + s.points + ' pts';
     var body = document.getElementById('stageBody');
     body.innerHTML = '<span style="color:var(--muted)">loading brief…</span>';
     document.getElementById('flagin').value = '';
     var r = document.getElementById('result'); r.textContent = ''; r.className = 'nz-result';
+    var form = document.getElementById('flagForm');
+    var solvedP = document.getElementById('solvedFlag');
+    form.classList.add('hidden');
+    solvedP.classList.add('hidden');
     show('stage');
     api('/stages/' + n).then(function (res) {
       if (res.status !== 200 || !res.body.ok) {
         body.innerHTML = '<div class="nz-quote">Brief unavailable (' + esc(res.body && res.body.error || 'error') + ').</div>';
         return;
+      }
+      if (res.body.solved) {
+        solvedP.textContent = '✓ recovered — flag: ' + res.body.submitted_flag;
+        solvedP.classList.remove('hidden');
+        form.classList.add('hidden');
+      } else {
+        form.classList.remove('hidden');
+        solvedP.classList.add('hidden');
       }
       var html = '<div class="nz-brief">' + renderDesc(res.body.description) + '</div>';
       var files = res.body.attachments || [];
@@ -505,7 +531,7 @@
   function renderScore(lb) {
     var p = lb ? Promise.resolve(lb) : api('/leaderboard').then(function (res) { return res.body.leaderboard; });
     return p.then(function (rows) {
-      var total = STAGES.length || 10;
+      var total = STAGES.length || 8;
       var mine = TEAM ? TEAM.code : null;
       document.getElementById('scorebody').innerHTML = (rows || []).map(function (r) {
         var pct = total ? (r.stages_cleared / total * 100) : 0;

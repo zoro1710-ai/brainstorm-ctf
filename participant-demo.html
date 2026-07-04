@@ -95,36 +95,36 @@
   <div class="wrap">
     <div class="demo-banner">◍ DEMO — click Stage 1 and play it through. (Flag check is in-page for the demo; the live site checks on the server.)</div>
 
-  <div id="view-board">
-    <h2 class="section-label">// the trail — <span id="nodecount">0</span>/10 stages recovered</h2>
-    <!-- SCORE STRIP -->
-    <div class="score-strip" id="demoScoreStrip">
-      <div class="sc-block">
-        <span class="sc-label">your score</span>
-        <span class="sc-val" id="demoScore">0 <span style="font-size:13px;font-weight:400;color:var(--muted)">pts</span></span>
+    <!-- ============ BOARD VIEW ============ -->
+    <div id="view-board">
+      <h2 class="section-label">// the trail — <span id="nodecount">0</span>/8 stages recovered</h2>
+      <!-- SCORE STRIP -->
+      <div class="score-strip" id="demoScoreStrip">
+        <div class="sc-block">
+          <span class="sc-label">your score</span>
+          <span class="sc-val" id="demoScore">0 <span style="font-size:13px;font-weight:400;color:var(--muted)">pts</span></span>
+        </div>
+        <div class="sc-divider"></div>
+        <div class="sc-block">
+          <span class="sc-label">stages solved</span>
+          <span class="sc-val" id="demoSolved">0</span>
+        </div>
+        <div class="sc-divider"></div>
+        <div class="sc-block">
+          <span class="sc-label">out of</span>
+          <span class="sc-val" style="color:var(--muted)">8</span>
+        </div>
       </div>
-      <div class="sc-divider"></div>
-      <div class="sc-block">
-        <span class="sc-label">stages solved</span>
-        <span class="sc-val" id="demoSolved">0</span>
-      </div>
-      <div class="sc-divider"></div>
-      <div class="sc-block">
-        <span class="sc-label">out of</span>
-        <span class="sc-val" style="color:var(--muted)">10</span>
-      </div>
-    </div>
-    <div class="board">
+      <div class="board">
+
         <div class="tile" id="tile1" onclick="openS1()"><span class="pts">1</span>▶ Static on the Line<br><small id="t1status">OPEN — click to start</small></div>
         <div class="tile locked" id="tile2"><span class="pts">2</span>🔒 Sign of Life<br><small>clear stage 1 to unlock</small></div>
         <div class="tile locked" id="tile3"><span class="pts">3</span>🔒 Cold Start<br><small>clear stage 2</small></div>
         <div class="tile locked"><span class="pts">4</span>🔒 Corrupted Log<br><small>clear stage 3</small></div>
         <div class="tile locked"><span class="pts">5</span>🔒 Mission 047<br><small>clear stage 4</small></div>
-        <div class="tile locked"><span class="pts">6</span>🔒 Uplink Dump<br><small>clear stage 5</small></div>
-        <div class="tile locked"><span class="pts">7</span>🔒 Quiet Spaces<br><small>clear stage 6</small></div>
-        <div class="tile locked"><span class="pts">8</span>🔒 Wake Sequence<br><small>clear stage 7</small></div>
-        <div class="tile locked"><span class="pts">9</span>🔒 Diagnostic Beep<br><small>clear stage 8</small></div>
-        <div class="tile locked"><span class="pts">10</span>🔒 Full Boot<br><small>clear stage 9 · FINALE</small></div>
+        <div class="tile locked"><span class="pts">6</span>🔒 Wake Sequence<br><small>clear stage 5</small></div>
+        <div class="tile locked"><span class="pts">7</span>🔒 Diagnostic Beep<br><small>clear stage 6</small></div>
+        <div class="tile locked"><span class="pts">8</span>🔒 Full Boot<br><small>clear stage 7 · FINALE</small></div>
       </div>
     </div>
 
@@ -329,12 +329,12 @@ handshake_interfaces.srv.Wake_Response(success=False, message='REJECTED :: wrong
   }
 
   function renderScore(){
-    const me = solvedS2 ? "2 / 10" : solvedS1 ? "1 / 10" : "0 / 10";
+    const me = solvedS2 ? "2 / 8" : solvedS1 ? "1 / 8" : "0 / 8";
     const rows = [
-      ["1","signal_hunters","10 / 10","2026-07-04 14:22:07 ★ KIT"],
-      ["2","null_pointer","8 / 10","—"],
+      ["1","signal_hunters","8 / 8","2026-07-04 14:22:07 ★ KIT"],
+      ["2","null_pointer","6 / 8","—"],
       ["3","team_demo (you)", me ,"—"],
-      ["4","quiet_spaces","2 / 10","—"],
+      ["4","quiet_spaces","2 / 8","—"],
     ];
     document.getElementById("scorebody").innerHTML =
       rows.map(r=>`<tr class="scorebar"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");
