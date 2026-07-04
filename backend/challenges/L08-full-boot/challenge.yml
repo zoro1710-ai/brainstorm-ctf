@@ -6,8 +6,7 @@ type: standard
 state: visible
 
 description: |
-  > This is it. Everything you've recovered comes together here. Bring
-  > Unit Zero all the way back online.
+  > This is it. Everything you've recovered comes together here. Bring Unit Zero all the way back online.
 
   For this last stretch, Unit Zero's body is a **turtlesim** turtle.
 
@@ -19,10 +18,7 @@ description: |
   ros2 launch full_boot boot.launch.py
   ```
 
-  Pilot the turtle through a **square** — four straight legs, four turns,
-  back close to where you started. Standard ROS 2 teleop
-  (`/turtle1/cmd_vel`). Close the loop and Unit Zero fully wakes on its
-  own, printing the last flag. First team to submit it wins the kit.
+  Pilot the turtle through a **square** — four straight legs, four turns, back close to where you started. Standard ROS 2 teleop (`/turtle1/cmd_vel`). Close the loop and Unit Zero fully wakes on its own, printing the last flag. First team to submit it wins the kit.
 
   ---
   Skills: turtlesim, teleop/Twist.
