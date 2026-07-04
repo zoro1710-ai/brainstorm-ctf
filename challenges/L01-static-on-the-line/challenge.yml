@@ -10,17 +10,11 @@ attachments:
 
 description: |
   > **MAINTENANCE LOG — AUTO-GENERATED**
-  > Unit Zero stopped responding mid-cycle. No crash report. No shutdown
-  > sequence. Just... static.
+  > Unit Zero stopped responding mid-cycle. No crash report. No shutdown sequence. Just... static.
 
-  Recovery crews pulled one surviving artifact from the wreckage: a fragment of
-  Unit Zero's flight-recorder log. It still remembers how the bot booted — and,
-  buried in the boot environment, how to wake it up again.
+  Recovery crews pulled one surviving artifact from the wreckage: a fragment of Unit Zero's flight-recorder log. It still remembers how the bot booted — and, buried in the boot environment, how to wake it up again.
 
-  The bot's **wake protocol keys off its own build identity**. The recorder won't
-  spell the wake word out for you: it assumes anyone who *built* this bot already
-  knows where that name is written down, in public. Read the fragment carefully —
-  most of it is noise — follow what it's pointing at, and recover the wake word.
+  The bot's **wake protocol keys off its own build identity**. The recorder won't spell the wake word out for you: it assumes anyone who *built* this bot already knows where that name is written down, in public. Read the fragment carefully most of it is noise — follow what it's pointing at, and recover the wake word.
 
 
   **Download the attached `blackbox_fragment.log` and start reading.**
