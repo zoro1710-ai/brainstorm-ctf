@@ -31,7 +31,19 @@ function buildParticipantRouter(ctx) {
     const solves = db.prepare(
       'SELECT stage_number, solved_at FROM solves WHERE team_id = ? ORDER BY stage_number'
     ).all(req.team.id);
-    res.json({ ok: true, team: req.team, solves });
+    // Check if this is an organizer ghost session (read-only impersonation)
+    const session = db.prepare(
+      'SELECT user_agent, created_at FROM sessions WHERE token = ?'
+    ).get(req.sessionToken);
+    const isGhost = session && session.user_agent === 'ORGANIZER_GHOST';
+    // Ghost tokens expire after 10 minutes
+    if (isGhost) {
+      const ageMs = Date.now() - new Date(session.created_at).getTime();
+      if (ageMs > 600000) {
+        return res.status(401).json({ ok: false, error: 'ghost session expired — request a new one from eval page' });
+      }
+    }
+    res.json({ ok: true, team: req.team, solves, is_ghost: !!isGhost });
   });
 
   router.get('/stages', requireTeamAuth(db), (req, res) => {
@@ -126,6 +138,15 @@ function buildParticipantRouter(ctx) {
   });
 
   router.post('/submit', requireTeamAuth(db), (req, res) => {
+    // Block ghost (organizer impersonation) sessions from submitting — they
+    // are read-only views and must never alter team state.
+    const session = db.prepare(
+      'SELECT user_agent FROM sessions WHERE token = ?'
+    ).get(req.sessionToken);
+    if (session && session.user_agent === 'ORGANIZER_GHOST') {
+      return res.status(403).json({ ok: false, error: 'ghost sessions are read-only — flag submission blocked' });
+    }
+
     const { stage_number, flag } = req.body || {};
     const stageNumber = parseInt(stage_number, 10);
     if (!stageNumber || !flag) return res.status(400).json({ ok: false, error: 'stage_number and flag required' });

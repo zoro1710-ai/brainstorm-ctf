@@ -37,7 +37,9 @@ app.listen(PORT, () => {
   console.log(` Listening on   ${baseUrl}${publicDomain ? ` (port ${PORT})` : ''}`);
   console.log(` Participant UI ${baseUrl}/participant-live.html`);
   console.log(` Organizer UI   ${baseUrl}/organizer.html?key=${organizerKey}`);
+  console.log(` Eval Monitor   ${baseUrl}/eval.html?key=${organizerKey}`);
   console.log(` Database       ${paths.DB_PATH}`);
+
   console.log(` Stages seeded  ${stageDefs.length} (from challenges/*/challenge.yml)`);
   const placeholderStages = stageDefs.filter((s) => s.isPlaceholder).map((s) => s.stageNumber);
   if (placeholderStages.length) {

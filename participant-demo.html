@@ -47,6 +47,38 @@
   .scorebar td:first-child{color:var(--accent);}
   .prompt{color:var(--accent);}
   .result-ok{color:var(--accent);} .result-no{color:var(--danger);}
+  /* score strip */
+  .score-strip{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+     background:rgba(53,224,255,.06);border:1px solid var(--accent-dim);
+     border-radius:7px;padding:12px 18px;margin:0 0 18px;font-size:13px;}
+  .score-strip .sc-label{color:var(--muted);letter-spacing:1px;font-size:10px;text-transform:uppercase;}
+  .score-strip .sc-val{color:var(--accent);font-size:22px;font-weight:800;
+     text-shadow:0 0 12px rgba(53,224,255,.5);line-height:1;}
+  .score-strip .sc-divider{width:1px;height:36px;background:var(--accent-dim);}
+  .score-strip .sc-block{display:flex;flex-direction:column;gap:2px;}
+  /* score pop modal */
+  .score-pop{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;
+     background:rgba(4,8,20,.7);backdrop-filter:blur(6px);animation:fadeIn .25s ease;}
+  .score-pop.out{animation:fadeOut .4s ease forwards;}
+  .score-pop-box{background:var(--panel);border:1px solid var(--accent);border-radius:12px;
+     padding:36px 48px;text-align:center;
+     box-shadow:0 0 60px rgba(53,224,255,.25),0 16px 48px rgba(0,0,0,.6);
+     animation:popIn .35s cubic-bezier(.22,1,.36,1);max-width:400px;width:90%;}
+  .spp-stage{color:var(--warn);letter-spacing:3px;font-size:11px;text-transform:uppercase;margin-bottom:10px;}
+  .spp-check{font-size:40px;margin-bottom:6px;}
+  .spp-title{color:var(--accent);font-size:18px;font-weight:800;letter-spacing:2px;
+     text-shadow:0 0 12px rgba(53,224,255,.5);margin-bottom:18px;}
+  .spp-row{display:flex;justify-content:space-between;align-items:center;
+     padding:8px 0;border-bottom:1px solid #122033;font-size:13px;}
+  .spp-row:last-of-type{border-bottom:none;}
+  .spp-key{color:var(--muted);letter-spacing:1px;}
+  .spp-earn{color:var(--warn);font-weight:800;font-size:18px;text-shadow:0 0 10px rgba(255,180,84,.5);}
+  .spp-total{color:var(--accent);font-weight:800;font-size:22px;text-shadow:0 0 14px rgba(53,224,255,.6);}
+  .spp-msg{color:var(--muted);font-size:11.5px;margin-top:16px;letter-spacing:.5px;}
+  .spp-cont{margin-top:20px;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes fadeOut{to{opacity:0}}
+  @keyframes popIn{from{transform:scale(.8) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
 </style>
 </head>
 <body>
@@ -63,10 +95,26 @@
   <div class="wrap">
     <div class="demo-banner">◍ DEMO — click Stage 1 and play it through. (Flag check is in-page for the demo; the live site checks on the server.)</div>
 
-    <!-- ============ BOARD VIEW ============ -->
-    <div id="view-board">
-      <h2 class="section-label">// the trail — <span id="nodecount">0</span>/10 stages recovered</h2>
-      <div class="board">
+  <div id="view-board">
+    <h2 class="section-label">// the trail — <span id="nodecount">0</span>/10 stages recovered</h2>
+    <!-- SCORE STRIP -->
+    <div class="score-strip" id="demoScoreStrip">
+      <div class="sc-block">
+        <span class="sc-label">your score</span>
+        <span class="sc-val" id="demoScore">0 <span style="font-size:13px;font-weight:400;color:var(--muted)">pts</span></span>
+      </div>
+      <div class="sc-divider"></div>
+      <div class="sc-block">
+        <span class="sc-label">stages solved</span>
+        <span class="sc-val" id="demoSolved">0</span>
+      </div>
+      <div class="sc-divider"></div>
+      <div class="sc-block">
+        <span class="sc-label">out of</span>
+        <span class="sc-val" style="color:var(--muted)">10</span>
+      </div>
+    </div>
+    <div class="board">
         <div class="tile" id="tile1" onclick="openS1()"><span class="pts">1</span>▶ Static on the Line<br><small id="t1status">OPEN — click to start</small></div>
         <div class="tile locked" id="tile2"><span class="pts">2</span>🔒 Sign of Life<br><small>clear stage 1 to unlock</small></div>
         <div class="tile locked" id="tile3"><span class="pts">3</span>🔒 Cold Start<br><small>clear stage 2</small></div>

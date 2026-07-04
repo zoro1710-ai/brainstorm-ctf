@@ -8,6 +8,8 @@ const path = require('node:path');
 const express = require('express');
 const { requireOrganizerAuth } = require('../auth');
 const { computeLeaderboard } = require('../leaderboard');
+const { randomToken } = require('../crypto-utils');
+
 
 function buildOrganizerRouter(ctx) {
   const { db, hub, organizerKey, stageContent } = ctx;
@@ -158,7 +160,42 @@ function buildOrganizerRouter(ctx) {
     hub.attachOrganizer(res);
   });
 
+  // ── Ghost Login ──────────────────────────────────────────────────────────
+  // Issues a short-lived read-only impersonation token so organizers can
+  // see the participant portal exactly as a specific team sees it — without
+  // knowing their password and without touching their real session.
+  //
+  // The token lives in sessions with user_agent='ORGANIZER_GHOST' so it's
+  // fully auditable. Flag submission is blocked both client-side (is_ghost
+  // banner) and server-side (submit.js rejects ghost sessions).
+  //
+  // POST /api/organizer/ghost-login  { team_code: "TEAM03" }
+  // → { ok: true, token, team: { id, code, name }, expires_in: 600 }
+  router.post('/ghost-login', (req, res) => {
+    const { team_code } = req.body || {};
+    if (!team_code) return res.status(400).json({ ok: false, error: 'team_code required' });
+
+    const team = db.prepare('SELECT id, code, name FROM teams WHERE code = ?')
+      .get(String(team_code).toUpperCase());
+    if (!team) return res.status(404).json({ ok: false, error: 'team not found' });
+
+    const now = new Date().toISOString();
+    const token = randomToken(32);
+    db.prepare(`
+      INSERT INTO sessions (token, team_id, created_at, last_seen_at, ip, user_agent)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(token, team.id, now, now, 'organizer-ghost', 'ORGANIZER_GHOST');
+
+    res.json({
+      ok: true,
+      token,
+      team: { id: team.id, code: team.code, name: team.name },
+      expires_in: 600,
+    });
+  });
+
   return router;
 }
 
 module.exports = { buildOrganizerRouter };
+

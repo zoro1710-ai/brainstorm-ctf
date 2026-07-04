@@ -8,8 +8,31 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="nodezero-portal.css">
+<style>
+  /* ── Ghost mode banner ── */
+  .ghost-bar{
+    position:sticky;top:0;z-index:1000;
+    background:#2d0a0a;border-bottom:2px solid var(--danger);
+    color:var(--danger);font-size:12px;letter-spacing:1.5px;
+    padding:8px 22px;display:flex;align-items:center;gap:12px;
+    font-weight:700;text-transform:uppercase;
+  }
+  .ghost-bar .gb-dot{width:8px;height:8px;border-radius:50%;background:var(--danger);
+    box-shadow:0 0 8px var(--danger);animation:pulse 1s infinite;flex-shrink:0;}
+  .ghost-bar .gb-team{color:#ff8888;font-weight:400;margin-left:4px;}
+  .ghost-bar .gb-expire{margin-left:auto;font-size:10px;color:#cc4444;font-weight:400;}
+</style>
 </head>
 <body>
+
+  <!-- ================= GHOST MODE BANNER (shown only for organizer impersonation) ================= -->
+  <div class="ghost-bar hidden" id="ghostBar">
+    <span class="gb-dot"></span>
+    ORGANIZER GHOST VIEW &nbsp;&mdash;&nbsp; viewing as <span class="gb-team" id="ghostTeamLabel">TEAM??</span>
+    &nbsp;&mdash;&nbsp; READ-ONLY &nbsp;&bull;&nbsp; SUBMIT DISABLED
+    <span class="gb-expire" id="ghostExpire">expires in 10:00</span>
+  </div>
+
 
   <!-- ================= NAV ================= -->
   <div class="nz-nav">
@@ -17,6 +40,7 @@
     <span class="nz-links" id="navLinks">
       <a id="nav-board" onclick="showBoard()">TRAIL</a>
       <a id="nav-score" onclick="showScore()">RACE</a>
+      <span class="nz-score-chip hidden" id="myScoreChip">▸ <span id="myScoreVal">0</span> pts</span>
       <span class="nz-badge dim" id="whoami"></span>
       <a id="logoutBtn" class="hidden" onclick="logout()">LOG OUT</a>
     </span>
@@ -67,6 +91,24 @@
         <span class="nz-progress"><i id="progFill" style="width:0%"></i></span>
       </div>
 
+      <!-- MY SCORE STRIP -->
+      <div class="nz-score-strip" id="scoreStrip">
+        <div class="sc-block">
+          <span class="sc-label">your score</span>
+          <span class="sc-val" id="stripScore">0 <span style="font-size:13px;font-weight:400;color:var(--muted)">pts</span></span>
+        </div>
+        <div class="sc-divider"></div>
+        <div class="sc-block">
+          <span class="sc-label">stages solved</span>
+          <span class="sc-val" id="stripSolved">0</span>
+        </div>
+        <div class="sc-divider"></div>
+        <div class="sc-block">
+          <span class="sc-label">hint cost</span>
+          <span class="sc-val warn" id="stripHints">−0 <span style="font-size:13px;font-weight:400;color:var(--muted)">pts</span></span>
+        </div>
+      </div>
+
       <div class="nz-board" id="boardTiles" style="margin-top:18px;"></div>
     </section>
 
@@ -104,14 +146,125 @@
 
   <div class="nz-toasts" id="toasts"></div>
 
+  <!-- ================= SCORE POP (shown on correct solve) ================= -->
+  <div class="nz-score-pop hidden" id="scorePop" onclick="closeScorePop()">
+    <div class="nz-score-pop-box" onclick="event.stopPropagation()">
+      <div class="spp-stage" id="sppStage">STAGE 00 // TITLE</div>
+      <div class="spp-check">✦</div>
+      <div class="spp-title">SIGNAL RECOVERED</div>
+      <div class="spp-row">
+        <span class="spp-key">STAGE POINTS EARNED</span>
+        <span class="spp-earn" id="sppEarn">+0</span>
+      </div>
+      <div class="spp-row">
+        <span class="spp-key">RUNNING TOTAL</span>
+        <span class="spp-total" id="sppTotal">0 pts</span>
+      </div>
+      <div id="sppFinale" class="spp-row hidden">
+        <span class="spp-key">STATUS</span>
+        <span style="color:var(--warn);font-weight:800;letter-spacing:1px;">★ FULL SIGNAL RECOVERED</span>
+      </div>
+      <p class="spp-msg" id="sppMsg">next stage unlocked — keep going</p>
+      <div class="spp-cont">
+        <button class="nz-btn" onclick="closeScorePop()">[ CONTINUE ]</button>
+      </div>
+    </div>
+  </div>
+
 <script>
-  var TOKEN = localStorage.getItem('nz_token') || null;
-  var TEAM = JSON.parse(localStorage.getItem('nz_team') || 'null');
+  // ── Ghost mode detection ─────────────────────────────────────────────────
+  // If the URL hash starts with #ghost=<token>, this is an organizer
+  // impersonation session launched from eval.html. Use that token instead
+  // of localStorage and NEVER write it to localStorage.
+  var IS_GHOST = false;
+  var GHOST_TOKEN = null;
+  (function detectGhost() {
+    var h = location.hash || '';
+    if (h.startsWith('#ghost=')) {
+      GHOST_TOKEN = h.slice(7);
+      // Clear the hash so it doesn't linger in the address bar
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  }());
+
+  var TOKEN = GHOST_TOKEN || localStorage.getItem('nz_token') || null;
+  var TEAM = GHOST_TOKEN ? null : JSON.parse(localStorage.getItem('nz_team') || 'null');
   var STAGES = [];
   var CURRENT_STAGE = null;
+  var MY_SCORE = 0;   // running total (net of hint costs), updated after each solve
+  var HINT_COST = 0;  // total hint points spent by this team
   var es = null;
 
-  // --- difficulty split per the plan: 3 easy / 4 medium / 3 hard ---
+  // --- Score tracking helpers ------------------------------------------
+  function computeMyScore() {
+    // Points = sum of stage.points for all solved stages, minus hint cost.
+    // stage.points from the server; if not available fall back to stage_number * 100.
+    return STAGES.reduce(function(sum, s) {
+      if (!s.solved) return sum;
+      return sum + (s.points || s.stage_number * 100);
+    }, 0) - HINT_COST;
+  }
+
+  function updateScoreUI() {
+    var score = computeMyScore();
+    var solved = STAGES.filter(function(s){ return s.solved; }).length;
+    MY_SCORE = score;
+    // Navbar chip
+    var chip = document.getElementById('myScoreChip');
+    if (chip) {
+      document.getElementById('myScoreVal').textContent = score;
+      chip.classList.remove('hidden');
+    }
+    // Score strip on board
+    var sv = document.getElementById('stripScore');
+    if (sv) sv.innerHTML = score + ' <span style="font-size:13px;font-weight:400;color:var(--muted)">pts</span>';
+    var ss = document.getElementById('stripSolved');
+    if (ss) ss.textContent = solved;
+    var sh = document.getElementById('stripHints');
+    if (sh) sh.innerHTML = '\u2212' + HINT_COST + ' <span style="font-size:13px;font-weight:400;color:var(--muted)">pts</span>';
+  }
+
+  // Fetch hint costs from /me (solves) + compute hint total via leaderboard row.
+  // The leaderboard score already deducts hints, so we back-calculate hintCost.
+  function fetchAndUpdateScore() {
+    return api('/leaderboard').then(function(res) {
+      var rows = (res.body && res.body.leaderboard) || [];
+      var mine = TEAM && rows.find(function(r){ return r.team_code === TEAM.code; });
+      if (mine) {
+        // gross score = sum of stage_number*100 for cleared stages
+        var gross = STAGES.reduce(function(sum, s){
+          return s.solved ? sum + (s.points || s.stage_number * 100) : sum;
+        }, 0);
+        HINT_COST = Math.max(0, gross - mine.score);
+      }
+      updateScoreUI();
+    }).catch(function(){ updateScoreUI(); });
+  }
+
+  function showScorePop(stageN, earn, total, isFinale) {
+    var s = STAGES.find(function(x){ return x.stage_number === stageN; });
+    var title = s ? ('STAGE ' + String(stageN).padStart(2,'0') + ' // ' + cleanTitle(s.title)) : ('STAGE ' + String(stageN).padStart(2,'0'));
+    document.getElementById('sppStage').textContent = title;
+    document.getElementById('sppEarn').textContent = '+' + earn;
+    document.getElementById('sppTotal').textContent = total + ' pts';
+    var finRow = document.getElementById('sppFinale');
+    if (finRow) { if (isFinale) finRow.classList.remove('hidden'); else finRow.classList.add('hidden'); }
+    var msg = document.getElementById('sppMsg');
+    if (msg) msg.textContent = isFinale ? '\u2605 Full trail recovered \u2014 check the race board!' : 'next stage unlocked \u2014 keep going';
+    // Bump the navbar chip amber for a beat
+    var chip = document.getElementById('myScoreChip');
+    if (chip) { chip.classList.add('bump'); setTimeout(function(){ chip.classList.remove('bump'); }, 600); }
+    document.getElementById('scorePop').classList.remove('hidden');
+  }
+
+  function closeScorePop() {
+    var pop = document.getElementById('scorePop');
+    if (!pop) return;
+    pop.classList.add('out');
+    setTimeout(function(){ pop.classList.add('hidden'); pop.classList.remove('out'); }, 420);
+    showBoard();
+  }
+
   function diffOf(n){ return n <= 3 ? 'easy' : (n <= 7 ? 'medium' : 'hard'); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
@@ -145,16 +298,20 @@
 
   function logout() {
     localStorage.removeItem('nz_token'); localStorage.removeItem('nz_team');
-    TOKEN = null; TEAM = null;
+    TOKEN = null; TEAM = null; MY_SCORE = 0; HINT_COST = 0;
     if (es) { es.close(); es = null; }
     document.getElementById('logoutBtn').classList.add('hidden');
     document.getElementById('whoami').textContent = '';
+    var chip = document.getElementById('myScoreChip');
+    if (chip) chip.classList.add('hidden');
     show('login');
   }
 
   function afterLogin() {
     document.getElementById('whoami').textContent = TEAM.code + ' · ' + TEAM.name;
     document.getElementById('logoutBtn').classList.remove('hidden');
+    var chip = document.getElementById('myScoreChip');
+    if (chip) chip.classList.remove('hidden');
     connectStream();
     showBoard();
   }
@@ -173,6 +330,7 @@
     return api('/stages').then(function (res) {
       STAGES = (res.body && res.body.stages) || [];
       renderBoard();
+      fetchAndUpdateScore();
     });
   }
 
@@ -326,18 +484,23 @@
     api('/submit', { method: 'POST', body: JSON.stringify({ stage_number: CURRENT_STAGE, flag: flag }) }).then(function (res) {
       if (res.status === 200 && res.body.correct) {
         r.className = 'nz-result ok';
-        r.textContent = '✓ ' + (res.body.is_finale ? res.body.message : (res.body.message || 'Correct. Next stage unlocked.'));
-        loadStages().then(function () { setTimeout(showBoard, 1100); });
+        r.textContent = '\u2713 ' + (res.body.is_finale ? res.body.message : (res.body.message || 'Correct. Next stage unlocked.'));
+        var earnedPts = res.body.points || 0;
+        var isFinale = !!res.body.is_finale;
+        loadStages().then(function () {
+          showScorePop(CURRENT_STAGE, earnedPts, MY_SCORE, isFinale);
+        });
       } else if (res.status === 200 && res.body.already_solved) {
-        r.className = 'nz-result ok'; r.textContent = '✓ already recovered by your crew';
+        r.className = 'nz-result ok'; r.textContent = '\u2713 already recovered by your crew';
       } else if (res.status === 429) {
-        r.className = 'nz-result no'; r.textContent = '⚠ rate limited — slow down and try again';
+        r.className = 'nz-result no'; r.textContent = '\u26a0 rate limited \u2014 slow down and try again';
       } else {
-        r.className = 'nz-result no'; r.textContent = '✗ ' + (res.body.error || res.body.message || 'incorrect flag');
+        r.className = 'nz-result no'; r.textContent = '\u2717 ' + (res.body.error || res.body.message || 'incorrect flag');
       }
     }).catch(function(){ r.className = 'nz-result no'; r.textContent = 'backend unreachable'; });
     return false;
   }
+
 
   function renderScore(lb) {
     var p = lb ? Promise.resolve(lb) : api('/leaderboard').then(function (res) { return res.body.leaderboard; });
@@ -385,10 +548,65 @@
   function showBoard() { if (!TOKEN) return show('login'); loadStages().then(function () { show('board'); }); }
   function showScore() { if (!TOKEN) return show('login'); renderScore().then(function () { show('score'); }); }
 
+  // ── Ghost mode activation ───────────────────────────────────────────────
+  function activateGhostMode(teamCode, teamName) {
+    IS_GHOST = true;
+    // Show the red banner
+    var bar = document.getElementById('ghostBar');
+    if (bar) bar.classList.remove('hidden');
+    var lbl = document.getElementById('ghostTeamLabel');
+    if (lbl) lbl.textContent = teamCode + ' · ' + teamName;
+    // Lock the flag input and submit button
+    var fi = document.getElementById('flagin');
+    var sb = document.querySelector('.nz-flag-row .nz-btn');
+    if (fi) { fi.disabled = true; fi.placeholder = '[GHOST VIEW — submit disabled]'; }
+    if (sb) { sb.disabled = true; sb.textContent = '[ LOCKED ]'; }
+    // Countdown timer (10 min)
+    var startedAt = Date.now();
+    var expEl = document.getElementById('ghostExpire');
+    var timer = setInterval(function() {
+      var left = Math.max(0, 600 - Math.floor((Date.now() - startedAt) / 1000));
+      var m = Math.floor(left / 60);
+      var s = left % 60;
+      if (expEl) expEl.textContent = 'expires in ' + m + ':' + (s < 10 ? '0' : '') + s;
+      if (left === 0) {
+        clearInterval(timer);
+        alert('Ghost session expired. Close this tab and request a new one from eval.html.');
+      }
+    }, 1000);
+    // Hide the logout button (ghost sessions don't use localStorage)
+    var lb = document.getElementById('logoutBtn');
+    if (lb) lb.classList.add('hidden');
+  }
+
+  // ── Startup ─────────────────────────────────────────────────────────────
   // enter-to-login
   document.getElementById('loginPass').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
 
-  if (TOKEN && TEAM) { afterLogin(); } else { show('login'); }
+  if (GHOST_TOKEN) {
+    // Ghost mode: verify token via /me, then load the portal as that team
+    api('/me').then(function(res) {
+      if (!res.body || !res.body.ok) {
+        document.getElementById('ghostBar').classList.remove('hidden');
+        document.getElementById('ghostBar').textContent = '🔴 Ghost session invalid or expired. Close this tab.';
+        show('login');
+        return;
+      }
+      TEAM = res.body.team;
+      // Show the portal as a real login would, but with ghost restrictions
+      document.getElementById('whoami').textContent = TEAM.code + ' · ' + TEAM.name;
+      activateGhostMode(TEAM.code, TEAM.name);
+      connectStream();
+      showBoard();
+      if (res.body.is_ghost) {} // expected
+    }).catch(function() {
+      show('login');
+    });
+  } else if (TOKEN && TEAM) {
+    afterLogin();
+  } else {
+    show('login');
+  }
 </script>
 
 </body>

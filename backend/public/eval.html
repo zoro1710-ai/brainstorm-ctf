@@ -1,0 +1,370 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NODE ZERO // eval monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="nodezero-portal.css">
+<style>
+.ev-section-title{color:var(--warn);letter-spacing:2px;text-transform:uppercase;font-size:11px;margin:28px 0 12px;display:flex;align-items:center;gap:10px;}
+.ev-section-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--accent-dim),transparent);}
+.ev-health{display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:rgba(53,224,255,.05);border:1px solid var(--accent-dim);border-radius:8px;padding:14px 20px;margin:20px 0;}
+.ev-health .hb{display:flex;flex-direction:column;gap:3px;min-width:70px;}
+.ev-health .hb-val{font-size:22px;font-weight:800;color:var(--accent);line-height:1;text-shadow:0 0 10px rgba(53,224,255,.4);}
+.ev-health .hb-val.warn{color:var(--warn);}
+.ev-health .hb-val.danger{color:var(--danger);}
+.ev-health .hb-val.ok{color:#4dffb0;}
+.ev-health .hb-lbl{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+.ev-health .hb-div{width:1px;height:42px;background:var(--accent-dim);}
+.ev-conn{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);}
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.ev-card{background:var(--panel);border:1px solid var(--accent-dim);border-radius:8px;padding:16px 18px;position:relative;transition:border-color .2s;}
+.ev-card.active{border-color:rgba(77,255,176,.5);}
+.ev-card.idle{border-color:rgba(255,180,84,.5);}
+.ev-card.stuck{border-color:rgba(255,77,106,.6);background:rgba(255,77,106,.04);}
+.ev-card.done{border-color:var(--accent);background:rgba(53,224,255,.06);}
+.ev-card .ec-team{font-size:11px;color:var(--muted);letter-spacing:2px;}
+.ev-card .ec-name{font-size:15px;font-weight:700;color:var(--text);margin:4px 0 10px;line-height:1.2;}
+.ev-card .ec-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin:4px 0;color:var(--muted);}
+.ev-card .ec-row span{color:var(--text);}
+.ev-card .ec-badge{position:absolute;top:14px;right:14px;font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:20px;}
+.ev-card .ec-badge.active{background:rgba(77,255,176,.15);color:#4dffb0;border:1px solid #4dffb0;}
+.ev-card .ec-badge.idle{background:rgba(255,180,84,.15);color:var(--warn);border:1px solid var(--warn);}
+.ev-card .ec-badge.stuck{background:rgba(255,77,106,.15);color:var(--danger);border:1px solid var(--danger);}
+.ev-card .ec-badge.done{background:rgba(53,224,255,.15);color:var(--accent);border:1px solid var(--accent);}
+.ev-card .ec-last{font-size:10px;color:var(--muted);margin-top:8px;}
+.ev-card .ec-wrongs{display:inline-block;margin-top:4px;font-size:10px;color:var(--danger);border:1px solid rgba(255,77,106,.4);border-radius:12px;padding:1px 8px;background:rgba(255,77,106,.06);}
+.ev-view-btn{margin-top:12px;width:100%;background:transparent;color:var(--accent);border:1px solid var(--accent-dim);border-radius:5px;padding:7px 0;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;transition:.15s;}
+.ev-view-btn:hover{background:rgba(53,224,255,.1);border-color:var(--accent);box-shadow:0 0 10px rgba(53,224,255,.2);}
+.ev-view-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ev-feed{max-height:360px;overflow-y:auto;}
+.ev-event{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-bottom:1px solid #0d1a2e;font-size:12px;transition:background .15s;}
+.ev-event:hover{background:rgba(53,224,255,.03);}
+.ev-event:last-child{border-bottom:none;}
+.ev-event .ev-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.ev-event .ev-body{flex:1;}
+.ev-event .ev-tag{display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;padding:1px 7px;border-radius:10px;margin-right:6px;text-transform:uppercase;}
+.ev-event .ev-tag.rate{background:rgba(255,180,84,.2);color:var(--warn);border:1px solid rgba(255,180,84,.4);}
+.ev-event .ev-tag.locked{background:rgba(255,77,106,.2);color:var(--danger);border:1px solid rgba(255,77,106,.4);}
+.ev-event .ev-tag.alert{background:rgba(255,77,106,.3);color:var(--danger);border:1px solid var(--danger);}
+.ev-event .ev-tag.burst{background:rgba(255,180,84,.2);color:var(--warn);border:1px solid rgba(255,180,84,.4);}
+.ev-event .ev-meta{color:var(--muted);font-size:10px;margin-top:2px;}
+.ev-empty{color:var(--muted);font-size:12px;padding:20px;text-align:center;letter-spacing:1px;}
+.ev-heatmap{overflow-x:auto;}
+.ev-heatmap table{border-collapse:collapse;font-size:11px;min-width:600px;}
+.ev-heatmap th{color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--accent-dim);white-space:nowrap;background:var(--panel);}
+.ev-heatmap td{padding:6px 8px;border:1px solid #0d1a2e;text-align:center;font-size:11px;white-space:nowrap;}
+.ev-heatmap td.solved{background:rgba(53,224,255,.15);color:var(--accent);font-weight:700;}
+.ev-heatmap td.open{background:rgba(255,180,84,.07);color:var(--warn);}
+.ev-heatmap td.locked{color:#2a3f55;}
+.ev-heatmap td.team-hdr{color:var(--text);font-weight:700;text-align:left;background:var(--panel);border-color:var(--accent-dim);}
+.ev-ghost-toast{position:fixed;bottom:24px;right:24px;z-index:300;background:#0a1a0f;border:1px solid var(--accent);border-left:3px solid var(--accent);border-radius:6px;padding:14px 18px;font-size:12.5px;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.6);animation:toastIn .3s ease;}
+</style>
+</head>
+<body>
+
+  <div class="nz-nav">
+    <span class="nz-brand">NODE//ZERO<small>eval &middot; health monitor</small></span>
+    <span class="nz-links">
+      <span class="nz-badge" id="connBadge" style="border-color:var(--danger);color:var(--danger);">
+        <span class="nz-dot off" id="connDot"></span>connecting&hellip;
+      </span>
+    </span>
+  </div>
+
+  <div class="nz-wrap">
+
+    <div id="noKeyWarn" class="hidden nz-banner" style="border-color:var(--danger);color:var(--danger);margin-top:24px;">
+      &starf; No organizer key in URL &mdash; open as <code style="color:var(--danger)">/eval.html?key=YOUR_KEY</code>
+    </div>
+
+    <!-- HEALTH BAR -->
+    <p class="ev-section-title">// system health</p>
+    <div class="ev-health">
+      <div class="hb"><span class="hb-val ok" id="hbBackend">&mdash;</span><span class="hb-lbl">backend</span></div>
+      <div class="hb-div"></div>
+      <div class="hb"><span class="hb-val" id="hbSse">&mdash;</span><span class="hb-lbl">SSE clients</span></div>
+      <div class="hb-div"></div>
+      <div class="hb"><span class="hb-val" id="hbTeams">&mdash;</span><span class="hb-lbl">crews</span></div>
+      <div class="hb-div"></div>
+      <div class="hb"><span class="hb-val" id="hbSolves">&mdash;</span><span class="hb-lbl">solves</span></div>
+      <div class="hb-div"></div>
+      <div class="hb"><span class="hb-val warn" id="hbSubs">&mdash;</span><span class="hb-lbl">submissions</span></div>
+      <div class="hb-div"></div>
+      <div class="hb"><span class="hb-val danger" id="hbAlerts">&mdash;</span><span class="hb-lbl">alerts</span></div>
+      <div class="ev-conn">
+        <span class="nz-dot off" id="sseDot"></span>
+        <span id="sseLabel" style="font-size:11px;">SSE disconnected</span>
+      </div>
+    </div>
+
+    <!-- TEAM GRID -->
+    <p class="ev-section-title">// team health &mdash; click &ldquo;view as&rdquo; to see their exact portal</p>
+    <div class="ev-grid" id="teamGrid"><div class="nz-empty">loading teams&hellip;</div></div>
+
+    <!-- PROBLEM FEED -->
+    <p class="ev-section-title">// problem feed &mdash; bad events only</p>
+    <div class="nz-panel" style="padding:0;">
+      <div class="ev-feed" id="problemFeed"><div class="ev-empty">loading&hellip;</div></div>
+    </div>
+
+    <!-- HEAT MAP -->
+    <p class="ev-section-title">// stage heat map &mdash; who is where</p>
+    <div class="nz-panel" style="padding:12px 0;">
+      <div class="ev-heatmap">
+        <table id="heatTable"><thead id="heatHead"></thead><tbody id="heatBody"></tbody></table>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toasts"></div>
+
+<script>
+  var KEY = new URLSearchParams(location.search).get('key') || '';
+  var TEAMS = [];
+  var TOTAL_STAGES = 10;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];}); }
+
+  function ago(iso){
+    if(!iso) return 'never';
+    var diff = Math.floor((Date.now()-new Date(iso).getTime())/1000);
+    if(diff<5) return 'just now';
+    if(diff<60) return diff+'s ago';
+    if(diff<3600) return Math.floor(diff/60)+'m ago';
+    return Math.floor(diff/3600)+'h ago';
+  }
+
+  function statusOf(lastAt){
+    if(!lastAt) return 'idle';
+    var diff=(Date.now()-new Date(lastAt).getTime())/1000;
+    if(diff<300) return 'active';
+    if(diff<900) return 'idle';
+    return 'stuck';
+  }
+
+  function statusLabel(st){ return {active:'ACTIVE',idle:'IDLE',stuck:'STUCK',done:'DONE'}[st]||st; }
+
+  function orgApi(path){
+    var sep=path.indexOf('?')>=0?'&':'?';
+    return fetch('/api/organizer'+path+sep+'key='+encodeURIComponent(KEY),{
+      headers:{'X-Organizer-Key':KEY}
+    }).then(function(r){return r.json();});
+  }
+
+  function refreshHealth(){
+    fetch('/healthz').then(function(r){return r.json();}).then(function(d){
+      var el=document.getElementById('hbBackend');
+      el.textContent=d.ok?'UP':'DOWN';
+      el.className='hb-val '+(d.ok?'ok':'danger');
+      if(d.sse_clients){
+        var pub=d.sse_clients.public||0,org=d.sse_clients.organizer||0;
+        document.getElementById('hbSse').textContent=pub+'p / '+org+'o';
+      }
+    }).catch(function(){
+      var el=document.getElementById('hbBackend');
+      el.textContent='DOWN'; el.className='hb-val danger';
+    });
+  }
+
+  function renderTeamGrid(teams,activity){
+    TOTAL_STAGES=Math.max(10,teams.reduce(function(m,t){return Math.max(m,t.stages_cleared||0);},0));
+    var lastAct={};
+    (activity||[]).forEach(function(e){
+      if(e.kind!=='submission') return;
+      if(!lastAct[e.team_code]||e.at>lastAct[e.team_code]) lastAct[e.team_code]=e.at;
+    });
+    var wrongCounts={};
+    (activity||[]).forEach(function(e){
+      if(e.kind!=='submission'||e.is_correct||e.rejection_reason) return;
+      if(!wrongCounts[e.team_code]) wrongCounts[e.team_code]={};
+      var n=e.stage_number;
+      wrongCounts[e.team_code][n]=(wrongCounts[e.team_code][n]||0)+1;
+    });
+    document.getElementById('hbTeams').textContent=teams.length;
+    var totalSolves=teams.reduce(function(a,t){return a+(t.stages_cleared||0);},0);
+    document.getElementById('hbSolves').textContent=totalSolves;
+    TEAMS=teams;
+    var html=teams.map(function(tm){
+      var stAll=tm.is_winner?'done':statusOf(lastAct[tm.team_code]||null);
+      var curStage=tm.current_stage||0;
+      var nextStage=curStage+1;
+      var wrongsOnNext=(wrongCounts[tm.team_code]||{})[nextStage]||0;
+      var wrongsLabel=wrongsOnNext>0
+        ?'<div class="ec-wrongs">'+wrongsOnNext+' wrong guess'+(wrongsOnNext>1?'es':'')+'  on stage '+nextStage+'</div>'
+        :'';
+      var badge='<span class="ec-badge '+stAll+'">'+statusLabel(stAll)+'</span>';
+      return '<div class="ev-card '+stAll+'">'+badge+
+        '<div class="ec-team">'+esc(tm.team_code)+'</div>'+
+        '<div class="ec-name">'+esc(tm.team_name)+'</div>'+
+        '<div class="ec-row"><span>stage cleared</span><span>'+(curStage>0?curStage+' / '+TOTAL_STAGES:'0 / '+TOTAL_STAGES)+'</span></div>'+
+        '<div class="ec-row"><span>score</span><span>'+(tm.score||0)+' pts</span></div>'+
+        '<div class="ec-row"><span>wrong guesses total</span><span>'+(tm.incorrect_submissions||0)+'</span></div>'+
+        '<div class="ec-last">last activity: '+ago(lastAct[tm.team_code]||null)+'</div>'+
+        wrongsLabel+
+        '<button class="ev-view-btn" onclick="launchGhost(\''+esc(tm.team_code)+'\',\''+esc(tm.team_name)+'\',this)">'+
+        '[ VIEW AS '+esc(tm.team_code)+' ]</button>'+
+      '</div>';
+    }).join('');
+    document.getElementById('teamGrid').innerHTML=html||'<div class="nz-empty">no teams yet</div>';
+  }
+
+  function renderProblemFeed(activity,alerts){
+    var recentWrong={};
+    var problems=[];
+    (activity||[]).forEach(function(e){
+      if(e.kind!=='submission') return;
+      if(!e.is_correct&&!e.rejection_reason){
+        var k=e.team_code+':'+e.stage_number;
+        if(!recentWrong[k]) recentWrong[k]=[];
+        recentWrong[k].push(e.at);
+      }
+      if(e.rejection_reason==='rate_limited'){
+        problems.push({icon:'&starf;',tag:'rate',tagLabel:'RATE LIMITED',team:e.team_code,
+          desc:'Stage '+e.stage_number+' &mdash; backend throttled this team',at:e.at});
+      } else if(e.rejection_reason==='locked_stage'){
+        problems.push({icon:'&ctdot;',tag:'locked',tagLabel:'LOCKED STAGE',team:e.team_code,
+          desc:'Tried to submit Stage '+e.stage_number+' before unlocking it',at:e.at});
+      }
+    });
+    Object.keys(recentWrong).forEach(function(k){
+      var parts=k.split(':'),code=parts[0],stage=parts[1];
+      var times=recentWrong[k];
+      var now=Date.now();
+      var recent=times.filter(function(t){return now-new Date(t).getTime()<120000;});
+      if(recent.length>=3){
+        problems.push({icon:'!',tag:'burst',tagLabel:'REPEATED WRONG GUESSES',
+          team:code,desc:recent.length+' wrong on Stage '+stage+' in 2 min &mdash; team may be stuck',
+          at:times[times.length-1]});
+      }
+    });
+    (alerts||[]).forEach(function(a){
+      problems.push({icon:'!',tag:'alert',tagLabel:a.severity+' ALERT',
+        team:(a.team_ids||[]).join(', '),
+        desc:a.alert_type+(a.stage_number?' &middot; stage '+a.stage_number:''),
+        at:a.created_at});
+    });
+    document.getElementById('hbAlerts').textContent=(alerts||[]).length;
+    problems.sort(function(a,b){return(b.at||'')>(a.at||'')?1:-1;});
+    if(!problems.length){
+      document.getElementById('problemFeed').innerHTML='<div class="ev-empty">&#10003; no problems detected &mdash; clean run so far</div>';
+      return;
+    }
+    document.getElementById('problemFeed').innerHTML=problems.map(function(p){
+      return '<div class="ev-event">'+
+        '<span class="ev-icon">'+p.icon+'</span>'+
+        '<div class="ev-body">'+
+          '<span class="ev-tag '+p.tag+'">'+esc(p.tagLabel)+'</span>'+
+          '<b style="color:var(--accent)">'+esc(p.team)+'</b> &mdash; '+p.desc+
+          '<div class="ev-meta">'+ago(p.at)+'</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  function renderHeatMap(teams,solves){
+    var solved={};
+    teams.forEach(function(t){solved[t.team_code]=new Set();});
+    (solves||[]).forEach(function(s){if(solved[s.team_code]) solved[s.team_code].add(s.stage_number);});
+    var nums=[];for(var i=1;i<=TOTAL_STAGES;i++) nums.push(i);
+    document.getElementById('heatHead').innerHTML='<tr><th>CREW</th>'+nums.map(function(n){
+      return '<th>S'+String(n).padStart(2,'0')+'</th>';
+    }).join('')+'</tr>';
+    document.getElementById('heatBody').innerHTML=teams.map(function(tm){
+      var s=solved[tm.team_code]||new Set();
+      var cells=nums.map(function(n){
+        if(s.has(n)) return '<td class="solved">&#10003;</td>';
+        var unlocked=n===1||s.has(n-1);
+        return unlocked?'<td class="open">&middot;</td>':'<td class="locked">&mdash;</td>';
+      }).join('');
+      return '<tr><td class="team-hdr">'+esc(tm.team_code)+
+        ' <span style="color:var(--muted);font-size:10px">'+esc(tm.team_name)+'</span></td>'+cells+'</tr>';
+    }).join('')||'<tr><td colspan="11" class="nz-empty">no teams yet</td></tr>';
+  }
+
+  function updateSubCount(activity){
+    var subs=(activity||[]).filter(function(e){return e.kind==='submission';});
+    document.getElementById('hbSubs').textContent=subs.length+(activity.length>=200?'+':'');
+  }
+
+  function launchGhost(teamCode,teamName,btn){
+    btn.disabled=true;
+    btn.textContent='[ opening... ]';
+    fetch('/api/organizer/ghost-login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Organizer-Key':KEY},
+      body:JSON.stringify({team_code:teamCode})
+    }).then(function(r){return r.json();}).then(function(res){
+      btn.disabled=false;
+      btn.textContent='[ VIEW AS '+teamCode+' ]';
+      if(!res.ok){showToast('Failed: '+(res.error||'unknown'));return;}
+      var url='/participant-live.html#ghost='+encodeURIComponent(res.token);
+      window.open(url,'_blank');
+      showToast('Ghost view opened for '+teamCode+' (expires in 10 min)');
+    }).catch(function(){
+      btn.disabled=false;
+      btn.textContent='[ VIEW AS '+teamCode+' ]';
+      showToast('Backend unreachable');
+    });
+  }
+
+  function showToast(msg){
+    var box=document.getElementById('toasts');
+    var el=document.createElement('div');
+    el.className='ev-ghost-toast';
+    el.textContent=msg;
+    box.appendChild(el);
+    setTimeout(function(){el.remove();},5000);
+  }
+
+  function refreshAll(){
+    var p1=orgApi('/teams').then(function(r){return r.teams||[];});
+    var p2=orgApi('/activity?limit=500').then(function(r){return r.activity||[];});
+    var p3=orgApi('/alerts').then(function(r){return r.alerts||[];});
+    var p4=orgApi('/solves').then(function(r){return r.solves||[];});
+    Promise.all([p1,p2,p3,p4]).then(function(r){
+      renderTeamGrid(r[0],r[1]);
+      renderProblemFeed(r[1],r[2]);
+      renderHeatMap(r[0],r[3]);
+      updateSubCount(r[1]);
+    }).catch(function(){showToast('Refresh error &mdash; check key');});
+    refreshHealth();
+  }
+
+  function connectSSE(){
+    var es=new EventSource('/api/organizer/stream?key='+encodeURIComponent(KEY));
+    es.onopen=function(){
+      document.getElementById('connBadge').style.borderColor='var(--accent)';
+      document.getElementById('connBadge').style.color='var(--accent)';
+      document.getElementById('connBadge').innerHTML='<span class="nz-dot"></span>connected &middot; live';
+      document.getElementById('sseDot').className='nz-dot';
+      document.getElementById('sseLabel').textContent='SSE live';
+    };
+    es.onerror=function(){
+      document.getElementById('connBadge').style.borderColor='var(--danger)';
+      document.getElementById('connBadge').style.color='var(--danger)';
+      document.getElementById('connBadge').innerHTML='<span class="nz-dot off"></span>reconnecting&hellip;';
+      document.getElementById('sseDot').className='nz-dot off';
+      document.getElementById('sseLabel').textContent='SSE reconnecting';
+    };
+    ['submission','solve','anticheat_alert','leaderboard_update'].forEach(function(ev){
+      es.addEventListener(ev,function(){refreshAll();});
+    });
+  }
+
+  if(!KEY){
+    document.getElementById('noKeyWarn').classList.remove('hidden');
+  } else {
+    connectSSE();
+    refreshAll();
+    setInterval(refreshAll,10000);
+    setInterval(refreshHealth,8000);
+  }
+</script>
+
+</body>
+</html>

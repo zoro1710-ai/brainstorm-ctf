@@ -232,6 +232,69 @@ tr.sev-LOW{background:rgba(53,224,255,.06);}
 .nz-stat .n.warn{color:var(--warn);} .nz-stat .n.danger{color:var(--danger);}
 .nz-stat .l{color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-top:8px;}
 
+/* ---- score chip (navbar) ---------------------------------------------- */
+.nz-score-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;padding:4px 12px;border-radius:20px;
+  border:1px solid var(--accent);color:var(--accent);
+  letter-spacing:1px;white-space:nowrap;
+  text-shadow:0 0 8px rgba(53,224,255,.4);
+  transition:all .3s ease;
+}
+.nz-score-chip.bump{
+  border-color:var(--warn);color:var(--warn);
+  box-shadow:0 0 14px rgba(255,180,84,.5);
+  text-shadow:0 0 10px var(--warn);
+  animation:scoreBump .5s ease;
+}
+@keyframes scoreBump{0%{transform:scale(1)}40%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+/* ---- score strip (board view) ----------------------------------------- */
+.nz-score-strip{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  background:rgba(53,224,255,.06);border:1px solid var(--accent-dim);
+  border-radius:7px;padding:12px 18px;margin:14px 0 4px;
+  font-size:13px;
+}
+.nz-score-strip .sc-label{color:var(--muted);letter-spacing:1px;font-size:11px;text-transform:uppercase;}
+.nz-score-strip .sc-val{
+  color:var(--accent);font-size:22px;font-weight:800;
+  text-shadow:0 0 12px rgba(53,224,255,.5);
+  line-height:1;
+}
+.nz-score-strip .sc-val.warn{color:var(--warn);text-shadow:0 0 12px rgba(255,180,84,.5);}
+.nz-score-strip .sc-divider{width:1px;height:36px;background:var(--accent-dim);flex-shrink:0;}
+.nz-score-strip .sc-block{display:flex;flex-direction:column;gap:2px;}
+
+/* ---- score pop (modal overlay on correct solve) ----------------------- */
+.nz-score-pop{
+  position:fixed;inset:0;z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(4,8,20,.7);backdrop-filter:blur(6px);
+  animation:fadeIn .25s ease;
+}
+.nz-score-pop.out{animation:fadeOut .4s ease forwards;}
+.nz-score-pop-box{
+  background:var(--panel);border:1px solid var(--accent);
+  border-radius:12px;padding:36px 48px;text-align:center;
+  box-shadow:0 0 60px rgba(53,224,255,.25),0 16px 48px rgba(0,0,0,.6);
+  animation:popIn .35s cubic-bezier(.22,1,.36,1);
+  max-width:420px;width:90%;
+}
+.nz-score-pop-box .spp-stage{color:var(--warn);letter-spacing:3px;font-size:11px;text-transform:uppercase;margin-bottom:10px;}
+.nz-score-pop-box .spp-check{font-size:40px;margin-bottom:6px;}
+.nz-score-pop-box .spp-title{color:var(--accent);font-size:18px;font-weight:800;letter-spacing:2px;text-shadow:0 0 12px rgba(53,224,255,.5);margin-bottom:18px;}
+.nz-score-pop-box .spp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #122033;font-size:13px;}
+.nz-score-pop-box .spp-row:last-of-type{border-bottom:none;}
+.nz-score-pop-box .spp-key{color:var(--muted);letter-spacing:1px;}
+.nz-score-pop-box .spp-earn{color:var(--warn);font-weight:800;font-size:18px;text-shadow:0 0 10px rgba(255,180,84,.5);}
+.nz-score-pop-box .spp-total{color:var(--accent);font-weight:800;font-size:22px;text-shadow:0 0 14px rgba(53,224,255,.6);}
+.nz-score-pop-box .spp-msg{color:var(--muted);font-size:11.5px;margin-top:16px;letter-spacing:.5px;}
+.nz-score-pop-box .spp-cont{margin-top:20px;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{to{opacity:0}}
+@keyframes popIn{from{transform:scale(.8) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
 /* ---- toast (live solve notifications) -------------------------------- */
 .nz-toasts{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:320px;}
 .nz-toast{
