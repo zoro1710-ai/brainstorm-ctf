@@ -121,7 +121,6 @@ function handleSubmission(ctx, { team, stageNumber, rawFlag, ip, sessionToken, u
     return { status: 200, body: { ok: true, already_solved: true, message: 'Stage already solved by your team.' } };
   }
 
-  anticheat.checkSameFlagMultipleTeams(db, hub, solve);
   anticheat.checkAbnormallyFastSolve(db, hub, solve, stage.expected_min_seconds);
 
   const leaderboard = computeLeaderboard(db);
